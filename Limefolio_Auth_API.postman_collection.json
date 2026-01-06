@@ -1,0 +1,245 @@
+{
+    "info": {
+        "name": "Limefolio Authentication API",
+        "description": "Complete authentication API with social login support",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password1\": \"SecurePassword123!\",\n  \"password2\": \"SecurePassword123!\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/registration/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "registration", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/login/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "login", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/user/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "user", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/logout/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "logout", ""]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Token Management",
+            "item": [
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/token/refresh/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "token", "refresh", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Verify Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"token\": \"{{access_token}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/token/verify/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "token", "verify", ""]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Social Authentication",
+            "item": [
+                {
+                    "name": "Google Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"access_token\": \"google_access_token_here\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/social/google/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "social", "google", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "GitHub Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"access_token\": \"github_access_token_here\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/social/github/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "auth", "social", "github", ""]
+                        }
+                    }
+                },
+                {
+                    "name": "Social Token Exchange",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"provider\": \"google\",\n  \"access_token\": \"provider_access_token_here\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8000/api/auth/social/token-exchange/",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": [
+                                "api",
+                                "auth",
+                                "social",
+                                "token-exchange",
+                                ""
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "access_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refresh_token",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}
