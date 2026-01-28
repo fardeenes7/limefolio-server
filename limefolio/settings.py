@@ -46,7 +46,10 @@ INSTALLED_APPS = [
     'social_django',
     'drf_social_oauth2',
     # Local apps
-    'portfolio',
+    'core',
+    'portfolios',
+    'projects',
+    'experiences',
 ]
 
 MIDDLEWARE = [
@@ -58,7 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'portfolio.auth.middleware.SiteDetectionMiddleware',  # Site detection from domain
+    'core.auth.middleware.SiteDetectionMiddleware',  # Site detection from domain
 ]
 
 ROOT_URLCONF = 'limefolio.urls'
@@ -171,8 +174,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'drf_social_oauth2.authentication.SocialAuthentication',
-        'portfolio.auth.authentication.APIKeyAuthentication',
-        'portfolio.auth.authentication.DomainBasedAuthentication',
+        'core.auth.authentication.APIKeyAuthentication',
+        'core.auth.authentication.DomainBasedAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
