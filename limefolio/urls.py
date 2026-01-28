@@ -18,6 +18,19 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # OAuth authentication
     path('api/auth/', include('drf_social_oauth2.urls', namespace='drf')),
+    
+    # Dashboard API - Requires Bearer token
+    path('api/dashboard/', include('portfolio.api.dashboard.urls')),
+    
+    # Site API - Domain-based, public read
+    path('api/site/', include('portfolio.api.site.urls')),
+    
+    # External API - Requires API key/secret
+    path('v1/', include('portfolio.api.external.urls')),
+    
+    # User endpoint
     path('api/user/', include('portfolio.urls')),
 ]
