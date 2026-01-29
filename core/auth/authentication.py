@@ -14,6 +14,7 @@ class DomainBasedAuthentication(BaseAuthentication):
     """
     
     def authenticate(self, request):
+        # Get host from request
         host = request.get_host().split(':')[0]  # Remove port if present
         site = self._get_site_from_host(host)
         

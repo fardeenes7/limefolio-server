@@ -54,4 +54,7 @@ class PublicSiteSerializer(serializers.ModelSerializer):
             'title', 'tagline', 'description',
             'logo', 'favicon'
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+            'title', 'tagline', 'description',
+            'logo', 'favicon'
+        ]

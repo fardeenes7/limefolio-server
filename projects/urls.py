@@ -1,32 +1,11 @@
 """
-URL configuration for projects app.
+URL configuration for projects app - Dashboard routes.
 """
-from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from projects.views import (
-    DashboardProjectViewSet, DashboardProjectMediaViewSet,
-    PublicProjectListView, PublicProjectDetailView,
-    ExternalProjectViewSet
-)
+from projects.views import DashboardProjectViewSet, DashboardProjectMediaViewSet
 
-# Dashboard router
-dashboard_router = DefaultRouter()
-dashboard_router.register(r'projects', DashboardProjectViewSet, basename='dashboard-projects')
-dashboard_router.register(r'media', DashboardProjectMediaViewSet, basename='dashboard-media')
+router = DefaultRouter()
+router.register(r'projects', DashboardProjectViewSet, basename='dashboard-projects')
+router.register(r'project-media', DashboardProjectMediaViewSet, basename='dashboard-project-media')
 
-# External router
-external_router = DefaultRouter()
-external_router.register(r'', ExternalProjectViewSet, basename='external-projects')
-
-# URL patterns
-urlpatterns = [
-    # Dashboard URLs
-    path('dashboard/', include(dashboard_router.urls)),
-    
-    # Public URLs
-    path('public/', PublicProjectListView.as_view(), name='public-projects'),
-    path('public/<slug:slug>/', PublicProjectDetailView.as_view(), name='public-project-detail'),
-    
-    # External API URLs
-    path('external/', include(external_router.urls)),
-]
+urlpatterns = router.urls

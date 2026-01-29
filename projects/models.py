@@ -1,13 +1,8 @@
-import re
-import secrets
-import hashlib
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 from django.utils.text import slugify
-from django.utils import timezone
-from uuid import uuid4
 
 User = get_user_model()
 
@@ -15,7 +10,8 @@ class Project(models.Model):
     """Portfolio projects"""
     site = models.ForeignKey('portfolios.Site', on_delete=models.CASCADE, related_name='projects')
     title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=100)
+    tagline = models.CharField(max_length=500, blank=True)
+    slug = models.SlugField(max_length=100, unique=True)
     description = models.TextField()
     content = models.TextField(blank=True)
 
@@ -52,7 +48,7 @@ class Project(models.Model):
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
-    def thumbnail_url(self):
+    def thumbnail(self):
         if self.media.exists():
             # Get the media which is image and not video, and is featured, if there is not featured image, get the first image
             featured_media = self.media.filter(is_featured=True, video__isnull=True).first()
@@ -68,6 +64,7 @@ class ProjectMedia(models.Model):
     image = models.ImageField(upload_to='project_media/', blank=True, null=True)
     video = models.FileField(upload_to='project_media/', blank=True, null=True)
     thumbnail = models.ImageField(upload_to='project_media/', blank=True, null=True)
+    alt = models.CharField(max_length=200, blank=True)
     order = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     
@@ -84,5 +81,17 @@ class ProjectMedia(models.Model):
     
     def __str__(self):
         return f"{self.project.title} - {self.order}"
+
+    def save(self, *args, **kwargs):
+        if not self.alt and self.image:
+            self.alt = self.image.name
+        super().save(*args, **kwargs)
+
+    def media_type(self):
+        if self.image:
+            return 'image'
+        elif self.video:
+            return 'video'
+        return None
 
 

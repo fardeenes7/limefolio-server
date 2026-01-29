@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'drf_social_oauth2',
+    'drf_spectacular',
     # Local apps
     'core',
     'portfolios',
@@ -180,6 +181,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Social Auth - Google
@@ -203,3 +205,61 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv()
 )
 
+# DRF Spectacular Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Limefolio API',
+    'DESCRIPTION': 'Portfolio SaaS Platform API - Multi-tenant portfolio website builder with custom domains, projects, experiences, and more.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': r'/api/',
+    'SECURITY': [
+        {
+            'OAuth2': [],
+        },
+        {
+            'ApiKeyAuth': [],
+        },
+        {
+            'DomainAuth': [],
+        }
+    ],
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'OAuth2': {
+                'type': 'oauth2',
+                'flows': {
+                    'authorizationCode': {
+                        'authorizationUrl': '/api/auth/authorize/',
+                        'tokenUrl': '/api/auth/token/',
+                        'scopes': {
+                            'read': 'Read access',
+                            'write': 'Write access',
+                        }
+                    }
+                }
+            },
+            'ApiKeyAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'X-API-Key',
+                'description': 'API Key authentication for external API access'
+            },
+            'DomainAuth': {
+                'type': 'apiKey',
+                'in': 'header',
+                'name': 'Host',
+                'description': 'Domain-based authentication for site-specific access'
+            }
+        }
+    },
+    'TAGS': [
+        {'name': 'Authentication', 'description': 'OAuth2 authentication endpoints'},
+        {'name': 'Dashboard - Sites', 'description': 'Portfolio site management (requires authentication)'},
+        {'name': 'Dashboard - Projects', 'description': 'Project management (requires authentication)'},
+        {'name': 'Dashboard - Experiences', 'description': 'Experience management (requires authentication)'},
+        {'name': 'Dashboard - API Keys', 'description': 'API key management (requires authentication)'},
+        {'name': 'Site API', 'description': 'Public site data access (domain-based)'},
+        {'name': 'External API', 'description': 'External API access (requires API key)'},
+    ],
+}

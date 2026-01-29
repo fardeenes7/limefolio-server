@@ -5,6 +5,8 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 from core.auth.permissions import HasValidAPIKey
 from projects.models import Project, ProjectMedia
 from projects.serializers import (
@@ -56,6 +58,11 @@ class PublicProjectListView(APIView):
     """
     permission_classes = []  # Public access
     
+    @extend_schema(
+        responses=PublicProjectSerializer(many=True),
+        description="Get all published projects for the current site (detected from domain)",
+        tags=['Site API']
+    )
     def get(self, request):
         site = getattr(request, 'site', None)
         
@@ -65,7 +72,7 @@ class PublicProjectListView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        projects = site.projects.filter(status='published').order_by('-featured', '-created_at')
+        projects = site.projects.filter(is_published=True).order_by('-featured', '-created_at')
         serializer = PublicProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -76,6 +83,19 @@ class PublicProjectDetailView(APIView):
     """
     permission_classes = []  # Public access
     
+    @extend_schema(
+        responses=PublicProjectSerializer,
+        parameters=[
+            OpenApiParameter(
+                name='slug',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.PATH,
+                description='Project slug'
+            )
+        ],
+        description="Get a single published project by slug",
+        tags=['Site API']
+    )
     def get(self, request, slug):
         site = getattr(request, 'site', None)
         
@@ -86,7 +106,7 @@ class PublicProjectDetailView(APIView):
             )
         
         try:
-            project = site.projects.get(slug=slug, status='published')
+            project = site.projects.get(slug=slug, is_published=True)
         except Project.DoesNotExist:
             return Response(
                 {'error': 'Project not found'},

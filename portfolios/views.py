@@ -5,6 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from drf_spectacular.utils import extend_schema
 from portfolios.models import Site
 from portfolios.serializers import SiteDetailSerializer, PublicSiteSerializer
 from projects.serializers import PublicProjectSerializer
@@ -36,6 +37,11 @@ class PublicSiteDetailView(APIView):
     """
     permission_classes = []  # Public access
     
+    @extend_schema(
+        responses=PublicSiteSerializer,
+        description="Get complete site data including projects, experiences, and social links (detected from domain)",
+        tags=['Site API']
+    )
     def get(self, request):
         site = getattr(request, 'site', None)
         
@@ -55,7 +61,7 @@ class PublicSiteDetailView(APIView):
         site_data = PublicSiteSerializer(site).data
         
         # Add projects
-        projects = site.projects.filter(status='published').order_by('-featured', '-created_at')
+        projects = site.projects.filter(is_published=True).order_by('-featured', '-created_at')
         site_data['projects'] = PublicProjectSerializer(projects, many=True).data
         
         # Add experiences

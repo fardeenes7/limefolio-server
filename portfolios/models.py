@@ -1,15 +1,48 @@
 import re
-import secrets
-import hashlib
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
-from django.utils.text import slugify
-from django.utils import timezone
 from uuid import uuid4
 
 User = get_user_model()
+
+
+# list of some common domains which are not allowed to be used as subdomain and maybe used by the system for other purposes
+RESERVED_SUBDOMAINS = [
+    # Core / DNS / Web defaults
+    'www','root','home','index','default','site','main',
+    # App & Platform
+    'app','apps','client','ui','web','portal','dashboard','panel','console',
+    # API & Services
+    'api','apis','backend','server','services','service',
+    'proxy','gateway','internal','private',
+    # Documentation & Support
+    'docs','doc','documentation','help','support','faq',
+    'status','changelog','blog','news',
+    # Authentication & Security
+    'auth','login','logout','signup','signin','sso',
+    'account','accounts','security','admin','administrator','sys','system',
+    # Email & Communication
+    'mail','email','smtp','imap','pop','webmail',
+    'newsletter','notify','notifications',
+    # Development & Testing
+    'dev','development','test','testing','stage','staging',
+    'preview','sandbox','beta','alpha','demo',
+    # Assets & Storage
+    'static','assets','cdn','media','files','uploads',
+    'storage','images','img',
+    # Analytics & Monitoring
+    'analytics','stats','metrics','monitor','monitoring',
+    'logs','logging','insights',
+    # System & Infrastructure
+    'limefolio','platform','common','core','global','shared',
+    # Tools & Utilities
+    'cli','sdk','webhook','hooks','events','cron',
+    'jobs','worker','workers','queue',
+    # Business & Finance
+    'secure','payment','billing','invoice','payments','checkout'
+]
+
 
 
 class Site(models.Model):
@@ -83,6 +116,9 @@ class Site(models.Model):
     
     def save(self, *args, **kwargs):
         # Auto-populate subdomain from username if not provided
+        # check if subdomain is in reserved subdomains
+        if self.subdomain in RESERVED_SUBDOMAINS:
+            raise ValueError(f"Subdomain '{self.subdomain}' is reserved and cannot be used.")
         if not self.subdomain:
             base_subdomain = self._sanitize_subdomain(self.user.username)
             subdomain = base_subdomain
@@ -101,10 +137,8 @@ class Site(models.Model):
         return self.title
 
 
-from django.db import models
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+
 
 class CustomDomain(models.Model):
     """Custom domain mapping for portfolio sites"""

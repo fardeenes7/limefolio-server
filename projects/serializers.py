@@ -10,7 +10,7 @@ class ProjectMediaSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProjectMedia
-        fields = ['id', 'image', 'thumbnail', 'caption', 'order', 'media_type']
+        fields = ['id', 'image', 'thumbnail', 'alt', 'order', 'media_type']
         read_only_fields = ['id']
 
 
@@ -22,7 +22,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'tagline', 'thumbnail',
-            'featured', 'status', 'media_count', 'created_at'
+            'featured', 'is_published', 'media_count', 'created_at'
         ]
         read_only_fields = ['id', 'slug', 'created_at']
     
@@ -38,8 +38,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'tagline', 'description',
-            'thumbnail', 'demo_url', 'github_url', 'technologies',
-            'featured', 'status', 'order', 'media',
+            'thumbnail', 'project_url', 'github_url', 'technologies',
+            'featured', 'is_published', 'order', 'media',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
@@ -53,7 +53,11 @@ class PublicProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'tagline', 'description',
-            'thumbnail', 'demo_url', 'github_url', 'technologies',
+            'thumbnail', 'project_url', 'github_url', 'technologies',
             'media', 'created_at'
         ]
-        read_only_fields = '__all__'
+        read_only_fields = [
+            'id', 'title', 'slug', 'tagline', 'description',
+            'thumbnail', 'project_url', 'github_url', 'technologies',
+            'media', 'created_at'
+        ]
