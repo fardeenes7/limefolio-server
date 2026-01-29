@@ -8,10 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from core.auth.permissions import HasValidAPIKey
-from projects.models import Project, ProjectMedia
+from projects.models import Project
 from projects.serializers import (
     ProjectListSerializer, ProjectDetailSerializer,
-    ProjectMediaSerializer, PublicProjectSerializer
+    PublicProjectSerializer
 )
 
 
@@ -34,21 +34,6 @@ class DashboardProjectViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(site=self.request.user.site)
 
-
-class DashboardProjectMediaViewSet(viewsets.ModelViewSet):
-    """
-    Dashboard Project Media management.
-    """
-    serializer_class = ProjectMediaSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def get_queryset(self):
-        return ProjectMedia.objects.filter(project__site__user=self.request.user)
-    
-    def perform_create(self, serializer):
-        project_id = self.request.data.get('project')
-        project = Project.objects.get(id=project_id, site__user=self.request.user)
-        serializer.save(project=project)
 
 
 # Public Views

@@ -19,16 +19,19 @@ urlpatterns = [
     path('api/auth/', include('drf_social_oauth2.urls', namespace='drf')),
     
     # Dashboard API - Requires Bearer token
-    # Routes: /api/dashboard/sites/, /api/dashboard/projects/, /api/dashboard/experiences/, /api/dashboard/social-links/, /api/dashboard/api-keys/
+    # Routes: /api/dashboard/sites/, /api/dashboard/projects/, /api/dashboard/experiences/, /api/dashboard/social-links/, /api/dashboard/api-keys/, /api/dashboard/blog/
     path('api/dashboard/', include('portfolios.urls')),
     path('api/dashboard/', include('projects.urls')),
     path('api/dashboard/', include('experiences.urls')),
     path('api/dashboard/', include('core.urls')),
+    path('api/dashboard/blog/', include('blog.urls')),
     
     # Site API - Domain-based, public read
-    # Routes: /api/sites/, /api/sites/projects/, /api/sites/projects/<slug>/
+    # Routes: /api/public/sites/, /api/public/projects/, /api/public/blog/, /api/public/media/
     path('api/public/', include('portfolios.api.public_urls')),
     path('api/public/', include('projects.api.public_urls')),
+    path('api/public/', include('blog.api.public_urls')),
+    path('api/public/', include('media.api.public_urls')),
     
     # External API - Requires API key/secret
     # Routes: /v1/projects/, /v1/experiences/, /v1/social-links/

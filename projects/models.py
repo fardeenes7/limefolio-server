@@ -1,8 +1,8 @@
 
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.utils.text import slugify
+from django.contrib.contenttypes.fields import GenericRelation
 
 User = get_user_model()
 
@@ -15,6 +15,8 @@ class Project(models.Model):
     description = models.TextField()
     content = models.TextField(blank=True)
 
+    # Media - using GenericRelation to the shared Media model
+    media = GenericRelation('media.Media', related_query_name='project')
     
     # Links
     project_url = models.URLField(blank=True, null=True, help_text='Live project URL')
@@ -48,50 +50,18 @@ class Project(models.Model):
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
+    @property
     def thumbnail(self):
+        """Get the featured or first image as thumbnail"""
         if self.media.exists():
-            # Get the media which is image and not video, and is featured, if there is not featured image, get the first image
-            featured_media = self.media.filter(is_featured=True, video__isnull=True).first()
+            # Get featured image first
+            featured_media = self.media.filter(is_featured=True, image__isnull=False).first()
             if featured_media:
-                return featured_media.thumbnail.url
-            return self.media.filter(video__isnull=True).first().thumbnail.url
+                return featured_media.thumbnail.url if featured_media.thumbnail else featured_media.image.url
+            
+            # Fall back to first image
+            first_media = self.media.filter(image__isnull=False).first()
+            if first_media:
+                return first_media.thumbnail.url if first_media.thumbnail else first_media.image.url
+        
         return None
-
-
-class ProjectMedia(models.Model):
-    """Media for portfolio projects"""
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='media')
-    image = models.ImageField(upload_to='project_media/', blank=True, null=True)
-    video = models.FileField(upload_to='project_media/', blank=True, null=True)
-    thumbnail = models.ImageField(upload_to='project_media/', blank=True, null=True)
-    alt = models.CharField(max_length=200, blank=True)
-    order = models.PositiveIntegerField(default=0)
-    is_featured = models.BooleanField(default=False)
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['order', '-created_at']
-    
-    def clean(self):
-        """Ensure at least one media type is provided"""
-        if not self.image and not self.video:
-            raise ValidationError('Either image or video must be provided.')
-    
-    def __str__(self):
-        return f"{self.project.title} - {self.order}"
-
-    def save(self, *args, **kwargs):
-        if not self.alt and self.image:
-            self.alt = self.image.name
-        super().save(*args, **kwargs)
-
-    def media_type(self):
-        if self.image:
-            return 'image'
-        elif self.video:
-            return 'video'
-        return None
-
-

@@ -2,16 +2,8 @@
 Serializers for projects and project media.
 """
 from rest_framework import serializers
-from projects.models import Project, ProjectMedia
-
-
-class ProjectMediaSerializer(serializers.ModelSerializer):
-    """Serializer for project media"""
-    
-    class Meta:
-        model = ProjectMedia
-        fields = ['id', 'image', 'thumbnail', 'alt', 'order', 'media_type']
-        read_only_fields = ['id']
+from projects.models import Project
+from media.serializers import MediaSerializer
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -32,32 +24,32 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for individual projects"""
-    media = ProjectMediaSerializer(many=True, read_only=True)
+    media = MediaSerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
         fields = [
-            'id', 'title', 'slug', 'tagline', 'description',
+            'id', 'title', 'slug', 'tagline', 'description', 'content',
             'thumbnail', 'project_url', 'github_url', 'technologies',
             'featured', 'is_published', 'order', 'media',
-            'created_at', 'updated_at'
+            'start_date', 'end_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
 
 
 class PublicProjectSerializer(serializers.ModelSerializer):
     """Public project serializer - only published projects"""
-    media = ProjectMediaSerializer(many=True, read_only=True)
+    media = MediaSerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
         fields = [
-            'id', 'title', 'slug', 'tagline', 'description',
+            'id', 'title', 'slug', 'tagline', 'description', 'content',
             'thumbnail', 'project_url', 'github_url', 'technologies',
-            'media', 'created_at'
+            'media', 'start_date', 'end_date', 'created_at'
         ]
         read_only_fields = [
-            'id', 'title', 'slug', 'tagline', 'description',
+            'id', 'title', 'slug', 'tagline', 'description', 'content',
             'thumbnail', 'project_url', 'github_url', 'technologies',
-            'media', 'created_at'
+            'media', 'start_date', 'end_date', 'created_at'
         ]
