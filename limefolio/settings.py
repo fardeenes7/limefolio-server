@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 from decouple import config, Csv
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     # Third-party apps
     'rest_framework',
+    "rest_framework_simplejwt",
     'corsheaders',
     'oauth2_provider',
     'social_django',
     'drf_social_oauth2',
     'drf_spectacular',
+    'storages',
     # Local apps
     'core',
     'portfolios',
@@ -95,20 +99,21 @@ WSGI_APPLICATION = 'limefolio.wsgi.application'
 # Note: Django modules for using databases are not support in serverless
 # environments like Vercel. You can use a database over HTTP, hosted elsewhere.
 
-DATABASES = {
+LOCAL_DB = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
+
+
 # Uncomment below to use PostgreSQL with DATABASE_URL from .env
-# import dj_database_url
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
-#     )
-# }
+DATABASES = LOCAL_DB if DEBUG else {
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='')
+    )
+}
 
 
 # Password validation
@@ -146,6 +151,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# AWS / S3 / R2 Settings
+
+AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default=None)
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": config('AWS_ACCESS_KEY_ID', default=''),
+            "secret_key": config('AWS_SECRET_ACCESS_KEY', default=''),
+            "bucket_name": config('AWS_STORAGE_BUCKET_NAME', default=''),
+            "endpoint_url": config('AWS_S3_ENDPOINT_URL', default=None),
+            "region_name": config('AWS_S3_REGION_NAME', default='auto'),
+            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+            "object_parameters": {
+                'CacheControl': 'max-age=86400',
+            },
+            "signature_version": 's3v4',
+            "querystring_auth": config("AWS_QUERYSTRING_AUTH", default=False, cast=bool),
+            # 'location': 'media', # Optional: if you want to put all media in a subfolder
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if AWS_S3_CUSTOM_DOMAIN else '/media/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -185,6 +220,24 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
+# OAUTH2_PROVIDER = {
+    # 'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+    # 'REFRESH_TOKEN_EXPIRE_SECONDS': 86400,
+# }
+
+# OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
+# OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
+# OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
+# OAUTH2_PROVIDER_ID_TOKEN_MODEL = 'oauth2_provider.IDToken'
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),   # change as needed
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+ACTIVATE_JWT = True
 
 # Social Auth - Google
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_CLIENT_ID', default='')

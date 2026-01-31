@@ -2,20 +2,32 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+import uuid
+import os
+
+
+def media_file_upload_to(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f"{instance.uuid}.{ext}"
+    return os.path.join('media', instance.content_type.model, filename)
 
 
 class Media(models.Model):
     """Reusable media model for projects, blog posts, etc."""
     
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
     # Generic relation to allow attachment to any model
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')
     
     # Media files
-    image = models.ImageField(upload_to='media/%Y/%m/', blank=True, null=True)
-    video = models.FileField(upload_to='media/%Y/%m/', blank=True, null=True)
-    thumbnail = models.ImageField(upload_to='media/thumbnails/%Y/%m/', blank=True, null=True)
+    image = models.ImageField(upload_to=media_file_upload_to, blank=True, null=True)
+    video = models.FileField(upload_to=media_file_upload_to, blank=True, null=True)
+    thumbnail = models.ImageField(upload_to=media_file_upload_to, blank=True, null=True)
     
     # Metadata
     alt = models.CharField(max_length=200, blank=True, help_text='Alternative text for accessibility')
@@ -43,8 +55,8 @@ class Media(models.Model):
             raise ValidationError('Either image or video must be provided.')
     
     def __str__(self):
-        media_type = self.media_type()
-        return f"{media_type.capitalize()} - {self.alt or self.id}"
+        media_type = self.media_type
+        return f"{media_type.capitalize()} - {self.alt or self.uuid}"
     
     def save(self, *args, **kwargs):
         # Auto-generate alt text from filename if not provided
@@ -62,7 +74,7 @@ class Media(models.Model):
             return 'image'
         elif self.video:
             return 'video'
-        return None
+        return 'unknown'
     
     @property
     def url(self):
@@ -72,3 +84,13 @@ class Media(models.Model):
         elif self.video:
             return self.video.url
         return None
+
+@receiver(post_delete, sender=Media)
+def delete_media_files(sender, instance, **kwargs):
+    """Delete files from S3/storage when Media object is deleted"""
+    if instance.image:
+        instance.image.delete(save=False)
+    if instance.video:
+        instance.video.delete(save=False)
+    if instance.thumbnail:
+        instance.thumbnail.delete(save=False)

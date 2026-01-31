@@ -16,6 +16,7 @@ class SiteDetectionMiddleware:
         site = None
         
         # Check if it's a subdomain (*.limefolio.com)
+        print(host)
         if host.endswith('.limefolio.com'):
             subdomain = host.replace('.limefolio.com', '')
             site = Site.objects.filter(subdomain=subdomain, is_active=True).first()
