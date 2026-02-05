@@ -43,6 +43,52 @@ class Experience(models.Model):
 
 User = get_user_model()
 
+class Skill(models.Model):
+    """User skills with categories and proficiency levels"""
+    CATEGORY_CHOICES = [
+        ('programming', 'Programming'),
+        ('framework', 'Framework/Library'),
+        ('database', 'Database'),
+        ('devops', 'DevOps/Cloud'),
+        ('design', 'Design'),
+        ('soft_skill', 'Soft Skill'),
+        ('language', 'Language'),
+        ('tool', 'Tool'),
+        ('other', 'Other'),
+    ]
+    
+    PROFICIENCY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('expert', 'Expert'),
+    ]
+    
+    site = models.ForeignKey('portfolios.Site', on_delete=models.CASCADE, related_name='skills')
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='other')
+    proficiency = models.CharField(max_length=20, choices=PROFICIENCY_CHOICES, default='intermediate')
+    
+    # Optional fields
+    description = models.TextField(blank=True, help_text='Brief description of your experience with this skill')
+    years_of_experience = models.PositiveIntegerField(null=True, blank=True, help_text='Years of experience')
+    icon_url = models.URLField(blank=True, null=True, help_text='URL to skill icon/logo')
+    
+    order = models.PositiveIntegerField(default=0)
+    is_featured = models.BooleanField(default=False, help_text='Show this skill prominently')
+    is_published = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-is_featured', 'category', 'order', 'name']
+        unique_together = ['site', 'name']
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_proficiency_display()})"
+
+
 class SocialLink(models.Model):
     """Social media links"""
     PLATFORMS = [

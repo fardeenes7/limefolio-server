@@ -28,9 +28,10 @@ urlpatterns = [
     path('api/dashboard/blog/', include('blog.urls')),
     
     # Site API - Domain-based, public read
-    # Routes: /api/public/sites/, /api/public/projects/, /api/public/blog/, /api/public/media/
+    # Routes: /api/public/sites/, /api/public/projects/, /api/public/experiences/, /api/public/skills/, /api/public/social-links/, /api/public/blog/, /api/public/media/
     path('api/public/', include('portfolios.api.public_urls')),
     path('api/public/', include('projects.api.public_urls')),
+    path('api/public/', include('experiences.api.public_urls')),
     path('api/public/', include('blog.api.public_urls')),
     path('api/public/', include('media.api.public_urls')),
     
