@@ -6,7 +6,6 @@ The `urlpatterns` list routes URLs to views. For more information please see:
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from drf_social_oauth2.views import ConvertTokenView
 
 urlpatterns = [
     path('admin/', admin.site.urls),

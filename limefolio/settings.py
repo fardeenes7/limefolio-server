@@ -171,7 +171,7 @@ STORAGES = {
             },
             "signature_version": 's3v4',
             "querystring_auth": config("AWS_QUERYSTRING_AUTH", default=False, cast=bool),
-            # 'location': 'media', # Optional: if you want to put all media in a subfolder
+            'location': 'media', # Optional: if you want to put all media in a subfolder
         },
     },
     "staticfiles": {
@@ -221,21 +221,23 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# OAUTH2_PROVIDER = {
-    # 'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
-    # 'REFRESH_TOKEN_EXPIRE_SECONDS': 86400,
-# }
+OAUTH2_PROVIDER = {
+    'ROTATE_REFRESH_TOKEN': True,
+    'REFRESH_TOKEN_GRACE_PERIOD_SECONDS': 10,
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 36000, # 36000 10 hours
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 2592000, # 30 days
+}
 
 # OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
 # OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
 # OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
 # OAUTH2_PROVIDER_ID_TOKEN_MODEL = 'oauth2_provider.IDToken'
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),   # change as needed
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),   # change as needed
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+#     "AUTH_HEADER_TYPES": ("Bearer",),
+# }
 
 ACTIVATE_JWT = True
 
@@ -268,53 +270,4 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
     'SCHEMA_PATH_PREFIX': r'/api/',
-    'SECURITY': [
-        {
-            'OAuth2': [],
-        },
-        {
-            'ApiKeyAuth': [],
-        },
-        {
-            'DomainAuth': [],
-        }
-    ],
-    'APPEND_COMPONENTS': {
-        'securitySchemes': {
-            'OAuth2': {
-                'type': 'oauth2',
-                'flows': {
-                    'authorizationCode': {
-                        'authorizationUrl': '/api/auth/authorize/',
-                        'tokenUrl': '/api/auth/token/',
-                        'scopes': {
-                            'read': 'Read access',
-                            'write': 'Write access',
-                        }
-                    }
-                }
-            },
-            'ApiKeyAuth': {
-                'type': 'apiKey',
-                'in': 'header',
-                'name': 'X-API-Key',
-                'description': 'API Key authentication for external API access'
-            },
-            'DomainAuth': {
-                'type': 'apiKey',
-                'in': 'header',
-                'name': 'Host',
-                'description': 'Domain-based authentication for site-specific access'
-            }
-        }
-    },
-    'TAGS': [
-        {'name': 'Authentication', 'description': 'OAuth2 authentication endpoints'},
-        {'name': 'Dashboard - Sites', 'description': 'Portfolio site management (requires authentication)'},
-        {'name': 'Dashboard - Projects', 'description': 'Project management (requires authentication)'},
-        {'name': 'Dashboard - Experiences', 'description': 'Experience management (requires authentication)'},
-        {'name': 'Dashboard - API Keys', 'description': 'API key management (requires authentication)'},
-        {'name': 'Site API', 'description': 'Public site data access (domain-based)'},
-        {'name': 'External API', 'description': 'External API access (requires API key)'},
-    ],
 }
