@@ -219,6 +219,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+     'DATE_INPUT_FORMATS': ['%Y-%m-%d', '%Y-%m-%dT%H:%M:%S.%fZ'],
 }
 
 OAUTH2_PROVIDER = {
