@@ -5,13 +5,13 @@ Verify that all Experience and Skills API endpoints are properly registered.
 import os
 import sys
 import django
+from django.urls import get_resolver
+from django.urls.resolvers import URLPattern, URLResolver
 
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'limefolio.settings')
 django.setup()
 
-from django.urls import get_resolver
-from django.urls.resolvers import URLPattern, URLResolver
 
 def list_urls(urlpatterns, prefix=''):
     """Recursively list all URL patterns"""

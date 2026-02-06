@@ -114,11 +114,18 @@ class Site(models.Model):
         
         return sanitized
     
+    def clean(self):
+        """Validate the model before saving"""
+        from django.core.exceptions import ValidationError
+        
+        # Check if subdomain is reserved
+        if self.subdomain and self.subdomain.lower() in RESERVED_SUBDOMAINS:
+            raise ValidationError({
+                'subdomain': f"Subdomain '{self.subdomain}' is reserved and cannot be used."
+            })
+    
     def save(self, *args, **kwargs):
         # Auto-populate subdomain from username if not provided
-        # check if subdomain is in reserved subdomains
-        if self.subdomain in RESERVED_SUBDOMAINS:
-            raise ValueError(f"Subdomain '{self.subdomain}' is reserved and cannot be used.")
         if not self.subdomain:
             base_subdomain = self._sanitize_subdomain(self.user.username)
             subdomain = base_subdomain
@@ -130,6 +137,9 @@ class Site(models.Model):
                 counter += 1
             
             self.subdomain = subdomain
+        
+        # Run model validation
+        self.full_clean()
         
         super().save(*args, **kwargs)
     

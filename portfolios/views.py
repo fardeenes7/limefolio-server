@@ -1,7 +1,7 @@
 """
 Views for portfolio sites - Dashboard and Public access.
 """
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -13,20 +13,53 @@ from experiences.serializers import ExperienceSerializer, SocialLinkSerializer
 
 
 # Dashboard Views
-class DashboardSiteViewSet(viewsets.ModelViewSet):
+class DashboardSiteView(APIView):
     """
     Dashboard Site management.
     User can only access their own site.
+    GET: Retrieve the user's site
+    PATCH: Update the user's site
     """
-    serializer_class = SiteDetailSerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = SiteDetailSerializer
     
-    def get_queryset(self):
-        return Site.objects.filter(user=self.request.user)
+    @extend_schema(
+        responses=SiteDetailSerializer,
+        description="Get the authenticated user's site details",
+        tags=['Dashboard - Site']
+    )
+    def get(self, request):
+        """Get the user's site"""
+        try:
+            site = request.user.site
+            serializer = SiteDetailSerializer(site)
+            return Response(serializer.data)
+        except Site.DoesNotExist:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
     
-    def get_object(self):
-        # Always return the user's site
-        return self.request.user.site
+    @extend_schema(
+        request=SiteDetailSerializer,
+        responses=SiteDetailSerializer,
+        description="Update the authenticated user's site",
+        tags=['Dashboard - Site']
+    )
+    def patch(self, request):
+        """Update the user's site"""
+        try:
+            site = request.user.site
+            serializer = SiteDetailSerializer(site, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Site.DoesNotExist:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 
 # Public Views

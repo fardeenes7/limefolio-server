@@ -20,7 +20,7 @@ urlpatterns = [
     # path('api/auth/custom-convert-token/', ConvertTokenView.as_view(), name='convert_token'),
     
     # Dashboard API - Requires Bearer token
-    # Routes: /api/dashboard/sites/, /api/dashboard/projects/, /api/dashboard/experiences/, /api/dashboard/social-links/, /api/dashboard/api-keys/, /api/dashboard/blog/
+    # Routes: /api/dashboard/site/, /api/dashboard/projects/, /api/dashboard/experiences/, /api/dashboard/social-links/, /api/dashboard/api-keys/, /api/dashboard/blog/
     path('api/dashboard/', include('portfolios.urls')),
     path('api/dashboard/', include('projects.urls')),
     path('api/dashboard/', include('experiences.urls')),

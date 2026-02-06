@@ -42,7 +42,28 @@ class SiteDetailSerializer(serializers.ModelSerializer):
             'custom_domains',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'uuid', 'subdomain', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'uuid', 'created_at', 'updated_at']
+    
+    def validate_subdomain(self, value):
+        """Validate that subdomain is not reserved"""
+        from portfolios.models import RESERVED_SUBDOMAINS
+        
+        if value and value.lower() in RESERVED_SUBDOMAINS:
+            raise serializers.ValidationError(
+                f"Subdomain '{value}' is reserved and cannot be used."
+            )
+        
+        # Check for uniqueness (excluding current instance if updating)
+        queryset = Site.objects.filter(subdomain=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise serializers.ValidationError(
+                f"Subdomain '{value}' is already taken."
+            )
+        
+        return value
 
 
 class PublicSiteSerializer(serializers.ModelSerializer):

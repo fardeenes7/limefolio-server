@@ -1,10 +1,9 @@
 """
 URL configuration for portfolios app - Dashboard routes.
 """
-from rest_framework.routers import DefaultRouter
-from portfolios.views import DashboardSiteViewSet
+from django.urls import path
+from portfolios.views import DashboardSiteView
 
-router = DefaultRouter()
-router.register(r'sites', DashboardSiteViewSet, basename='dashboard-sites')
-
-urlpatterns = router.urls
+urlpatterns = [
+    path('site/', DashboardSiteView.as_view(), name='dashboard-site'),
+]
