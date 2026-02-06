@@ -73,9 +73,11 @@ class PublicSiteSerializer(serializers.ModelSerializer):
         model = Site
         fields = [
             'title', 'tagline', 'description',
-            'logo', 'favicon'
+            'logo', 'favicon',
+            'meta_title', 'meta_description'
         ]
         read_only_fields = [
             'title', 'tagline', 'description',
-            'logo', 'favicon'
+            'logo', 'favicon',
+            'meta_title', 'meta_description'
         ]

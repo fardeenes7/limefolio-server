@@ -12,11 +12,15 @@ class SiteDetectionMiddleware:
         self.get_response = get_response
     
     def __call__(self, request):
-        host = request.get_host().split(':')[0]  # Remove port
+        # host = request.get_host().split(':')[0]  # Remove port
+        host  = request.headers.get('X-Public-Domain')
+
         site = None
-        
+
+        if not host:
+            return self.get_response(request)
+            
         # Check if it's a subdomain (*.limefolio.com)
-        print(host)
         if host.endswith('.limefolio.com'):
             subdomain = host.replace('.limefolio.com', '')
             site = Site.objects.filter(subdomain=subdomain, is_active=True).first()

@@ -9,7 +9,7 @@ from drf_spectacular.utils import extend_schema
 from portfolios.models import Site
 from portfolios.serializers import SiteDetailSerializer, PublicSiteSerializer
 from projects.serializers import PublicProjectSerializer
-from experiences.serializers import ExperienceSerializer, SocialLinkSerializer
+from experiences.serializers import ExperienceSerializer, SocialLinkSerializer, SkillSerializer
 
 
 # Dashboard Views
@@ -101,6 +101,10 @@ class PublicSiteDetailView(APIView):
         experiences = site.experiences.filter(is_published=True).order_by('-is_current', '-start_date')
         site_data['experiences'] = ExperienceSerializer(experiences, many=True).data
         
+        # Add skills
+        skills = site.skills.filter(is_published=True).order_by('-is_featured', 'category', 'order')
+        site_data['skills'] = SkillSerializer(skills, many=True).data
+
         # Add social links
         social_links = site.social_links.all().order_by('order')
         site_data['social_links'] = SocialLinkSerializer(social_links, many=True).data
