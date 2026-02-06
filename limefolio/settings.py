@@ -170,7 +170,7 @@ STORAGES = {
             },
             "signature_version": 's3v4',
             "querystring_auth": config("AWS_QUERYSTRING_AUTH", default=False, cast=bool),
-            'location': 'media', # Optional: if you want to put all media in a subfolder
+            # 'location': 'media', # Optional: if you want to put all media in a subfolder
         },
     },
     "staticfiles": {

@@ -88,9 +88,21 @@ class Media(models.Model):
 @receiver(post_delete, sender=Media)
 def delete_media_files(sender, instance, **kwargs):
     """Delete files from S3/storage when Media object is deleted"""
-    if instance.image:
-        instance.image.delete(save=False)
-    if instance.video:
-        instance.video.delete(save=False)
-    if instance.thumbnail:
-        instance.thumbnail.delete(save=False)
+    try:
+        if instance.image:
+            instance.image.delete(save=False)
+    except Exception:
+        # Silently fail if file doesn't exist or can't be deleted
+        pass
+    
+    try:
+        if instance.video:
+            instance.video.delete(save=False)
+    except Exception:
+        pass
+    
+    try:
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+    except Exception:
+        pass
