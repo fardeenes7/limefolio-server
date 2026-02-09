@@ -23,16 +23,5 @@
     "env": {
         "DJANGO_SETTINGS_MODULE": "limefolio.settings"
     },
-    "buildCommand": "bash build.sh",
-    "headers": [
-        {
-            "source": "/static/(.*)",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "public, max-age=31536000, immutable"
-                }
-            ]
-        }
-    ]
+    "buildCommand": "bash build.sh"
 }
