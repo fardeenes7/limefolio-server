@@ -79,6 +79,10 @@ class Site(models.Model):
     # Status
     is_published = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    theme = models.CharField(max_length=50, default='default')
+    template = models.CharField(max_length=50, default='default')
+    font = models.CharField(max_length=50, default='inter')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

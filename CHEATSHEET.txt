@@ -1,0 +1,130 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    LIMEFOLIO VERCEL DEPLOYMENT CHEAT SHEET                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 QUICK DEPLOY                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  1. Setup database (Neon/Supabase/Vercel Postgres)
+  2. Setup storage (Cloudflare R2/AWS S3)
+  3. Run: vercel login
+  4. Run: vercel --prod
+  5. Set environment variables in Vercel Dashboard
+  6. Run: vercel --prod (again)
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📋 REQUIRED ENVIRONMENT VARIABLES                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  SECRET_KEY=<generate-new-key>
+  DEBUG=False
+  ALLOWED_HOSTS=.vercel.app,yourdomain.com
+  DATABASE_URL=postgresql://user:pass@host:port/db
+  CORS_ALLOWED_ORIGINS=https://yourdomain.com
+  
+  AWS_ACCESS_KEY_ID=<your-key>
+  AWS_SECRET_ACCESS_KEY=<your-secret>
+  AWS_STORAGE_BUCKET_NAME=<bucket-name>
+  AWS_S3_ENDPOINT_URL=<endpoint>
+  AWS_S3_CUSTOM_DOMAIN=<domain>
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 ESSENTIAL COMMANDS                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  # Test before deploy
+  ./test_deployment.sh
+  python3 manage.py check_deployment
+  
+  # Deploy
+  vercel --prod
+  
+  # View logs
+  vercel logs --follow
+  
+  # Migrations
+  python3 manage.py makemigrations
+  python3 manage.py migrate
+  python3 manage.py showmigrations
+  
+  # Environment
+  vercel env pull
+  vercel env add VARIABLE_NAME
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📁 KEY FILES                                                                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  vercel.json              → Vercel configuration
+  build.sh                 → Build script (runs migrations!)
+  .env.example             → Environment variables template
+  test_deployment.sh       → Pre-deployment tests
+  
+  DEPLOYMENT_COMPLETE.md   → Setup summary & next steps
+  VERCEL_QUICKSTART.md     → 5-minute deployment guide
+  DEPLOYMENT.md            → Full deployment documentation
+  MIGRATIONS.md            → Migration commands reference
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ✅ PRE-DEPLOYMENT CHECKLIST                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  □ Database setup complete
+  □ S3/R2 bucket configured
+  □ All migrations created and committed
+  □ Environment variables ready
+  □ DEBUG=False for production
+  □ SECRET_KEY generated
+  □ ALLOWED_HOSTS configured
+  □ CORS_ALLOWED_ORIGINS set
+  □ Local tests pass
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🐛 TROUBLESHOOTING                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Migrations not running?
+    → Check: vercel logs
+    → Verify: DATABASE_URL in Vercel env vars
+  
+  Static files 404?
+    → Check: build logs for collectstatic
+    → Verify: STATIC_ROOT in settings.py
+  
+  Database connection error?
+    → Verify: DATABASE_URL format
+    → Check: Database allows Vercel IPs
+  
+  CORS errors?
+    → Update: CORS_ALLOWED_ORIGINS
+    → Include: Both www and non-www domains
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 WHAT HAPPENS ON DEPLOY                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  1. ✅ Install dependencies (requirements.txt)
+  2. ✅ Collect static files (collectstatic)
+  3. ✅ Run database migrations (migrate)
+  4. ✅ Deploy to serverless functions
+  5. ✅ Configure routing and caching
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 📞 QUICK LINKS                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  Vercel Dashboard:  https://vercel.com/dashboard
+  Neon Database:     https://neon.tech
+  Cloudflare R2:     https://cloudflare.com/r2
+  Vercel Docs:       https://vercel.com/docs
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 💡 GENERATE SECRET_KEY                                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+  python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  Ready to deploy? Run: vercel --prod                                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
