@@ -4,20 +4,9 @@
         {
             "src": "limefolio/wsgi.py",
             "use": "@vercel/python"
-        },
-        {
-            "src": "build.sh",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "."
-            }
         }
     ],
     "routes": [
-        {
-            "src": "/static/(.*)",
-            "dest": "/static/$1"
-        },
         {
             "src": "/(.*)",
             "dest": "limefolio/wsgi.py"
