@@ -1,15 +1,5 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "limefolio/wsgi.py",
-            "use": "@vercel/python",
-            "config": {
-                "maxLambdaSize": "15mb",
-                "runtime": "python3.9"
-            }
-        }
-    ],
+    "buildCommand": "bash build.sh",
     "routes": [
         {
             "src": "/static/(.*)",
@@ -19,9 +9,5 @@
             "src": "/(.*)",
             "dest": "limefolio/wsgi.py"
         }
-    ],
-    "env": {
-        "DJANGO_SETTINGS_MODULE": "limefolio.settings"
-    },
-    "buildCommand": "bash build.sh"
+    ]
 }
