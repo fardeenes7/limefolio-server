@@ -3,13 +3,6 @@
         {
             "src": "limefolio/wsgi.py",
             "use": "@vercel/python"
-        },
-        {
-            "src": "build.sh",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "."
-            }
         }
     ],
     "routes": [
@@ -21,5 +14,8 @@
             "src": "/(.*)",
             "dest": "limefolio/wsgi.py"
         }
-    ]
+    ],
+    "env": {
+        "DJANGO_SETTINGS_MODULE": "limefolio.settings"
+    }
 }

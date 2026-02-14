@@ -105,10 +105,10 @@ LOCAL_DB = {
     }
 }
 
-
+FORCE_SQLITE = config('FORCE_SQLITE', default=False, cast=bool)
 
 # Uncomment below to use PostgreSQL with DATABASE_URL from .env
-DATABASES = LOCAL_DB if DEBUG else {
+DATABASES = LOCAL_DB if FORCE_SQLITE else {
     'default': dj_database_url.config(
         default=config('DATABASE_URL', default='')
     )
