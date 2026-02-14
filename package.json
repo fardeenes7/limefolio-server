@@ -1,5 +1,0 @@
-{
-    "scripts": {
-        "vercel-build": "echo 'Python dependencies installed, running build.sh...' && bash build.sh"
-    }
-}
