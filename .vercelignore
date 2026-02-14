@@ -15,7 +15,6 @@ ENV/
 .gitignore
 *.md
 !README.md
-media/
 .DS_Store
 *.swp
 *.swo
