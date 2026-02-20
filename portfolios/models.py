@@ -70,7 +70,6 @@ class Site(models.Model):
     description = models.TextField(blank=True)
     logo = models.ImageField(upload_to='site_logos/', blank=True, null=True)
     favicon = models.ImageField(upload_to='site_favicons/', blank=True, null=True)
-    theme = models.CharField(max_length=50, default='default')
     
     # SEO
     meta_title = models.CharField(max_length=200, blank=True)

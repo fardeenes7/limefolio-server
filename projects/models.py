@@ -53,15 +53,20 @@ class Project(models.Model):
     @property
     def thumbnail(self):
         """Get the featured or first image as thumbnail"""
-        if self.media.exists():
-            # Get featured image first
-            featured_media = self.media.filter(is_featured=True, image__isnull=False).first()
-            if featured_media:
-                return featured_media.thumbnail.url if featured_media.thumbnail else featured_media.image.url
+        try:
+            if self.media.exists():
+                # Get featured image first
+                featured_media = self.media.filter(is_featured=True, image__isnull=False).first()
+                if featured_media:
+                    return featured_media.thumbnail.url if featured_media.thumbnail else featured_media.image.url
             
             # Fall back to first image
             first_media = self.media.filter(image__isnull=False).first()
             if first_media:
                 return first_media.thumbnail.url if first_media.thumbnail else first_media.image.url
-        
+            
+            # If no images, return None
+            return None
+        except Exception as e:
+            print(f"Error getting thumbnail: {e}")        
         return None

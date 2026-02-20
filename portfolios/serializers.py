@@ -37,7 +37,8 @@ class SiteDetailSerializer(serializers.ModelSerializer):
         model = Site
         fields = [
             'id', 'uuid', 'subdomain', 'title', 'tagline', 'description',
-            'logo', 'favicon', 'meta_title', 'meta_description',
+            'logo', 'favicon', 'theme', 'template', 'font',
+            'meta_title', 'meta_description',
             'is_published', 'is_active',
             'custom_domains',
             'created_at', 'updated_at'
@@ -73,11 +74,11 @@ class PublicSiteSerializer(serializers.ModelSerializer):
         model = Site
         fields = [
             'title', 'tagline', 'description',
-            'logo', 'favicon',
+            'theme','template','font', 'logo', 'favicon',
             'meta_title', 'meta_description'
         ]
         read_only_fields = [
             'title', 'tagline', 'description',
-            'logo', 'favicon',
+            'theme','template','font', 'logo', 'favicon',
             'meta_title', 'meta_description'
         ]
