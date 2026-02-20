@@ -36,7 +36,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'tagline', 'description', 'content',
-            'thumbnail', 'project_url', 'github_url', 'technologies',
+            'thumbnail', 'project_url', 'github_url', 'youtube_url', 'technologies',
             'featured', 'is_published', 'order', 'media', 'media_ids',
             'start_date', 'end_date', 'created_at', 'updated_at'
         ]
@@ -94,11 +94,11 @@ class PublicProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'tagline', 'description', 'content',
-            'thumbnail', 'project_url', 'github_url', 'technologies',
+            'thumbnail', 'project_url', 'github_url', 'youtube_url', 'technologies',
             'media', 'start_date', 'end_date', 'created_at'
         ]
         read_only_fields = [
             'id', 'title', 'slug', 'tagline', 'description', 'content',
-            'thumbnail', 'project_url', 'github_url', 'technologies',
+            'thumbnail', 'project_url', 'github_url', 'youtube_url', 'technologies',
             'media', 'start_date', 'end_date', 'created_at'
         ]

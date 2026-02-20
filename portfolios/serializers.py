@@ -24,7 +24,7 @@ class SiteListSerializer(serializers.ModelSerializer):
         model = Site
         fields = [
             'id', 'uuid', 'subdomain', 'title', 'tagline',
-            'is_published', 'created_at'
+            'is_published', 'available_for_hire', 'created_at'
         ]
         read_only_fields = ['id', 'uuid', 'created_at']
 
@@ -39,7 +39,7 @@ class SiteDetailSerializer(serializers.ModelSerializer):
             'id', 'uuid', 'subdomain', 'title', 'tagline', 'description',
             'logo', 'favicon', 'theme', 'template', 'font',
             'meta_title', 'meta_description',
-            'is_published', 'is_active',
+            'is_published', 'is_active', 'available_for_hire',
             'custom_domains',
             'created_at', 'updated_at'
         ]
@@ -75,10 +75,10 @@ class PublicSiteSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'tagline', 'description',
             'theme','template','font', 'logo', 'favicon',
-            'meta_title', 'meta_description'
+            'meta_title', 'meta_description', 'available_for_hire'
         ]
         read_only_fields = [
             'title', 'tagline', 'description',
             'theme','template','font', 'logo', 'favicon',
-            'meta_title', 'meta_description'
+            'meta_title', 'meta_description', 'available_for_hire'
         ]

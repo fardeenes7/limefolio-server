@@ -78,6 +78,7 @@ class Site(models.Model):
     # Status
     is_published = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    available_for_hire = models.BooleanField(default=False)
 
     theme = models.CharField(max_length=50, default='default')
     template = models.CharField(max_length=50, default='default')

@@ -21,6 +21,7 @@ class Project(models.Model):
     # Links
     project_url = models.URLField(blank=True, null=True, help_text='Live project URL')
     github_url = models.URLField(blank=True, null=True, help_text='Source code URL')
+    youtube_url = models.URLField(blank=True, null=True, help_text='YouTube video URL')
     
     # Technologies
     technologies = models.JSONField(default=list, blank=True, help_text='List of technologies used')
