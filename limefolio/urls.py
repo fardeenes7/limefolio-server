@@ -35,6 +35,8 @@ urlpatterns = [
     path('api/public/', include('experiences.api.public_urls')),
     path('api/public/', include('blog.api.public_urls')),
     path('api/public/', include('media.api.public_urls')),
+    path('api/public/migrate/', include('public_api.urls')),
+
     
     # External API - Requires API key/secret
     # Routes: /v1/projects/, /v1/experiences/, /v1/social-links/
