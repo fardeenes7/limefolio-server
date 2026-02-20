@@ -24,7 +24,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for individual projects"""
-    media = MediaSerializer(many=True, read_only=True)
+    media = serializers.SerializerMethodField()
     media_ids = serializers.ListField(
         child=serializers.IntegerField(),
         write_only=True,
@@ -41,6 +41,9 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'start_date', 'end_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
+    
+    def get_media(self, obj):
+        return MediaSerializer(obj.media.all(), many=True).data
     
     def create(self, validated_data):
         media_ids = validated_data.pop('media_ids', [])
@@ -88,7 +91,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 class PublicProjectSerializer(serializers.ModelSerializer):
     """Public project serializer - only published projects"""
-    media = MediaSerializer(many=True, read_only=True)
+    media = serializers.SerializerMethodField()
     
     class Meta:
         model = Project
@@ -102,3 +105,6 @@ class PublicProjectSerializer(serializers.ModelSerializer):
             'thumbnail', 'project_url', 'github_url', 'youtube_url', 'technologies',
             'media', 'start_date', 'end_date', 'created_at'
         ]
+    
+    def get_media(self, obj):
+        return MediaSerializer(obj.media.all(), many=True).data
