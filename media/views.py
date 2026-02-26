@@ -151,6 +151,45 @@ class DashboardMediaDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class SetFeaturedMediaView(APIView):
+    """
+    Mark a media item as the featured one within its parent object (e.g. a project).
+    Clears is_featured on all other media that share the same content_type + object_id,
+    ensuring only one item is featured at a time per parent.
+    If the media is not attached to any object, only the item itself is updated.
+    """
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses=MediaSerializer,
+        description="Set this media item as featured (clears featured flag on siblings)",
+        tags=['Dashboard - Media']
+    )
+    def post(self, request, pk):
+        try:
+            media = Media.objects.get(pk=pk)
+        except Media.DoesNotExist:
+            return Response({'error': 'Media not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # If already featured, allow toggling off
+        if media.is_featured:
+            media.is_featured = False
+            media.save(update_fields=['is_featured'])
+            return Response(MediaSerializer(media).data)
+
+        # Clear featured flag on all siblings in the same parent object
+        if media.content_type_id and media.object_id:
+            Media.objects.filter(
+                content_type=media.content_type,
+                object_id=media.object_id,
+                is_featured=True,
+            ).update(is_featured=False)
+
+        media.is_featured = True
+        media.save(update_fields=['is_featured'])
+        return Response(MediaSerializer(media).data)
+
+
 class DashboardMediaPresignedURLView(APIView):
     """
     Generate presigned URL for direct S3 upload.
