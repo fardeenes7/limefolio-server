@@ -18,7 +18,11 @@ class MediaSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Ensure at least one media type is provided"""
-        if not data.get('image') and not data.get('video'):
+        # For partial updates, fall back to the existing instance's fields
+        instance = getattr(self, 'instance', None)
+        has_image = data.get('image') or (instance and instance.image)
+        has_video = data.get('video') or (instance and instance.video)
+        if not has_image and not has_video:
             raise serializers.ValidationError("Either image or video must be provided.")
         return data
 
@@ -36,7 +40,10 @@ class MediaURLSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Ensure at least one media type is provided"""
-        if not data.get('image') and not data.get('video'):
+        instance = getattr(self, 'instance', None)
+        has_image = data.get('image') or (instance and instance.image)
+        has_video = data.get('video') or (instance and instance.video)
+        if not has_image and not has_video:
             raise serializers.ValidationError("Either image or video must be provided.")
         return data
     
@@ -74,6 +81,9 @@ class MediaCreateSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         """Ensure at least one media type is provided"""
-        if not data.get('image') and not data.get('video'):
+        instance = getattr(self, 'instance', None)
+        has_image = data.get('image') or (instance and instance.image)
+        has_video = data.get('video') or (instance and instance.video)
+        if not has_image and not has_video:
             raise serializers.ValidationError("Either image or video must be provided.")
         return data

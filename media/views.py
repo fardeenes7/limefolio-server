@@ -21,6 +21,9 @@ class DashboardMediaListView(APIView):
     List and create media for the authenticated user's site.
     """
     permission_classes = [IsAuthenticated]
+    # MultiPartParser lets the confirmation POST send a thumbnail file
+    # alongside the video/image URL string fields.
+    parser_classes = [MultiPartParser, FormParser]
     
     @extend_schema(
         responses=MediaSerializer(many=True),
@@ -51,13 +54,28 @@ class DashboardMediaListView(APIView):
         tags=['Dashboard - Media']
     )
     def post(self, request):
-        """Create media record after file upload"""
+        """Create media record after presigned-URL upload.
+        Accepts URL fields (image/video) plus an optional thumbnail file.
+        """
         from media.serializers import MediaURLSerializer
-        
-        serializer = MediaURLSerializer(data=request.data)
+
+        # Save thumbnail file to storage if provided as a file upload
+        thumbnail_url = None
+        thumb_file = request.FILES.get('thumbnail')
+        if thumb_file:
+            thumb_ext = thumb_file.name.split('.')[-1] if '.' in thumb_file.name else 'jpg'
+            thumb_filename = f"uploads/{uuid.uuid4()}.{thumb_ext}"
+            thumb_saved = default_storage.save(thumb_filename, ContentFile(thumb_file.read()))
+            thumbnail_url = default_storage.url(thumb_saved)
+
+        # Build data dict; for QueryDict use .dict() so it's mutable
+        data = request.data.dict() if hasattr(request.data, 'dict') else dict(request.data)
+        if thumbnail_url:
+            data['thumbnail'] = thumbnail_url
+
+        serializer = MediaURLSerializer(data=data)
         if serializer.is_valid():
             media = serializer.save()
-            # Return with the full MediaSerializer format
             response_serializer = MediaSerializer(media)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -68,6 +86,7 @@ class DashboardMediaDetailView(APIView):
     Retrieve, update, or delete a media item.
     """
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
     
     def get_object(self, pk):
         """Get media object"""
@@ -323,21 +342,33 @@ class DashboardMediaUploadView(APIView):
             )
         
         try:
-            # Generate unique filename
+            # Generate unique filename for main file
             ext = file.name.split('.')[-1] if '.' in file.name else ''
             file_uuid = str(uuid.uuid4())
             filename = f"uploads/{file_uuid}.{ext}" if ext else f"uploads/{file_uuid}"
             
-            # Save to S3
+            # Save main file to S3
             saved_path = default_storage.save(filename, ContentFile(file.read()))
             file_url = default_storage.url(saved_path)
             
-            # Create media record
+            # Handle optional thumbnail file
+            thumbnail_url = None
+            thumb_file = request.FILES.get('thumbnail')
+            if thumb_file:
+                thumb_ext = thumb_file.name.split('.')[-1] if '.' in thumb_file.name else 'jpg'
+                thumb_uuid = str(uuid.uuid4())
+                thumb_filename = f"uploads/{thumb_uuid}.{thumb_ext}"
+                thumb_saved = default_storage.save(thumb_filename, ContentFile(thumb_file.read()))
+                thumbnail_url = default_storage.url(thumb_saved)
+            
+            # Build media record
             media_data = {
                 'image' if is_image else 'video': file_url,
                 'alt': request.data.get('alt', file.name),
                 'caption': request.data.get('caption', ''),
             }
+            if thumbnail_url:
+                media_data['thumbnail'] = thumbnail_url
             
             serializer = MediaSerializer(data=media_data)
             if serializer.is_valid():
