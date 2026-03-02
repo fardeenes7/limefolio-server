@@ -272,3 +272,8 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
     'SCHEMA_PATH_PREFIX': r'/api/',
 }
+
+# Revalidation Settings
+REVALIDATION_TOKEN = config('REVALIDATION_TOKEN', default=None)
+PUBLIC_APP_URL = config('PUBLIC_APP_URL', default="https://public.limefolio.com")
+
