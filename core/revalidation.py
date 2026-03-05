@@ -10,11 +10,10 @@ def revalidate_public_cache(tag=None, path=None):
     """
     # Try to get settings, fall back to None if not defined
     token = getattr(settings, 'REVALIDATION_TOKEN', None)
-    public_app_domain = getattr(settings, 'PUBLIC_APP_DOMAIN', None)
-    base_url = f"https://public.{public_app_domain}"
+    base_url = getattr(settings, 'PUBLIC_APP_URL', None)
 
     if not token or not base_url:
-        logger.warning("Revalidation skipped: REVALIDATION_TOKEN or PUBLIC_APP_DOMAIN not configured.")
+        logger.warning("Revalidation skipped: REVALIDATION_TOKEN or PUBLIC_APP_URL not configured.")
         return False
 
     url = f"{base_url.rstrip('/')}/api/revalidate"
@@ -22,11 +21,10 @@ def revalidate_public_cache(tag=None, path=None):
         "secret": token,
     }
 
-    # replace .limefolio.com from tag or path if present
     if tag:
-        params["tag"] = tag.replace(f".{public_app_domain}", "")
+        params["tag"] = tag
     elif path:
-        params["path"] = path.replace(f".{public_app_domain}", "")
+        params["path"] = path
     else:
         logger.warning("Revalidation skipped: Neither tag nor path provided.")
         return False
@@ -39,3 +37,21 @@ def revalidate_public_cache(tag=None, path=None):
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to trigger revalidation: {str(e)}")
         return False
+
+def revalidate_site_tags(site, *tag_suffixes):
+    """
+    Revalidates multiple tag suffixes for a site across its subdomain and verified custom domains.
+    Example: revalidate_site_tags(site, "site", "projects", f"project-{slug}")
+    """
+    public_app_domain = getattr(settings, 'PUBLIC_APP_DOMAIN', 'limefolio.com')
+    
+    # Construct list of all domains for this site
+    domains = [f"{site.subdomain}.{public_app_domain}"]
+    
+    # Add verified custom domains
+    custom_domains = site.custom_domains.filter(status='verified').values_list('domain', flat=True)
+    domains.extend(list(custom_domains))
+    
+    for domain in domains:
+        for suffix in tag_suffixes:
+            revalidate_public_cache(tag=f"{domain}-{suffix}")

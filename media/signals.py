@@ -7,7 +7,7 @@ from projects.models import Project
 @receiver(post_save, sender=Media)
 def revalidate_media_cache(sender, instance, **kwargs):
     """Trigger revalidation when media is updated/attached."""
-    from core.revalidation import revalidate_public_cache
+    from core.revalidation import revalidate_site_tags
     
     # Try to find the associated site
     site = None
@@ -18,9 +18,8 @@ def revalidate_media_cache(sender, instance, **kwargs):
     
     if site:
         # Revalidate the main site data tag
-        revalidate_public_cache(tag=f"{site.subdomain}-site")
+        revalidate_site_tags(site, "site")
         
         # If it's a project image, revalidate the project specifically
         if isinstance(instance.content_object, Project):
-            revalidate_public_cache(tag=f"{site.subdomain}-projects")
-            revalidate_public_cache(tag=f"{site.subdomain}-project-{instance.content_object.slug}")
+            revalidate_site_tags(site, "projects", f"project-{instance.content_object.slug}")

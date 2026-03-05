@@ -276,4 +276,5 @@ SPECTACULAR_SETTINGS = {
 # Revalidation Settings
 REVALIDATION_TOKEN = config('REVALIDATION_TOKEN', default=None)
 PUBLIC_APP_DOMAIN = config('PUBLIC_APP_DOMAIN', default="limefolio.com")
+PUBLIC_APP_URL = config('PUBLIC_APP_URL', default=f"https://public.{PUBLIC_APP_DOMAIN}")
 

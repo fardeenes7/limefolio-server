@@ -18,35 +18,21 @@ def create_user_site(sender, instance, created, **kwargs):
 @receiver(post_save, sender='portfolios.Site')
 def revalidate_site_cache(sender, instance, **kwargs):
     """Trigger revalidation when Site settings are updated."""
-    from core.revalidation import revalidate_public_cache
-    
-    # Revalidate the main site data tag
-    revalidate_public_cache(tag=f"{instance.subdomain}-site")
-    
-    # If the user has custom domains, revalidate those too
-    for cd in instance.custom_domains.all():
-        revalidate_public_cache(tag=f"{cd.domain}-site")
+    from core.revalidation import revalidate_site_tags
+    revalidate_site_tags(instance, "site")
 
 def revalidate_site_related(instance):
     """Helper to revalidate site cache when a related model is saved."""
-    from core.revalidation import revalidate_public_cache
-    site = instance.site
-    
-    # Revalidate site data
-    revalidate_public_cache(tag=f"{site.subdomain}-site")
-    for cd in site.custom_domains.all():
-        revalidate_public_cache(tag=f"{cd.domain}-site")
+    from core.revalidation import revalidate_site_tags
+    revalidate_site_tags(instance.site, "site")
 
 @receiver(post_save, sender='projects.Project')
 def revalidate_project_cache(sender, instance, **kwargs):
     """Trigger revalidation when a Project is updated."""
-    from core.revalidation import revalidate_public_cache
+    from core.revalidation import revalidate_site_tags
     
-    # Revalidate the generic 'projects' list for this site
-    revalidate_public_cache(tag=f"{instance.site.subdomain}-projects")
-    
-    # Revalidate the specific project page
-    revalidate_public_cache(tag=f"{instance.site.subdomain}-project-{instance.slug}")
+    # Revalidate site-wide project list and specific project page
+    revalidate_site_tags(instance.site, "projects", f"project-{instance.slug}")
     
     # Revalidate the main site data (it might contain project counts/summaries)
     revalidate_site_related(instance)
