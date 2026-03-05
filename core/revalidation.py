@@ -10,21 +10,23 @@ def revalidate_public_cache(tag=None, path=None):
     """
     # Try to get settings, fall back to None if not defined
     token = getattr(settings, 'REVALIDATION_TOKEN', None)
-    base_url = getattr(settings, 'PUBLIC_APP_URL', None)
+    public_app_domain = getattr(settings, 'PUBLIC_APP_DOMAIN', None)
+    base_url = f"https://public.{public_app_domain}"
 
     if not token or not base_url:
-        logger.warning("Revalidation skipped: REVALIDATION_TOKEN or PUBLIC_APP_URL not configured.")
+        logger.warning("Revalidation skipped: REVALIDATION_TOKEN or PUBLIC_APP_DOMAIN not configured.")
         return False
 
     url = f"{base_url.rstrip('/')}/api/revalidate"
     params = {
         "secret": token,
     }
-    
+
+    # replace .limefolio.com from tag or path if present
     if tag:
-        params["tag"] = tag
+        params["tag"] = tag.replace(f".{public_app_domain}", "")
     elif path:
-        params["path"] = path
+        params["path"] = path.replace(f".{public_app_domain}", "")
     else:
         logger.warning("Revalidation skipped: Neither tag nor path provided.")
         return False
