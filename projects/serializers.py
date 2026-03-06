@@ -16,7 +16,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'id', 'title', 'slug', 'tagline', 'thumbnail',
             'featured', 'is_published', 'media_count', 'created_at'
         ]
-        read_only_fields = ['id', 'slug', 'created_at']
+        read_only_fields = ['id', 'created_at']
     
     def get_media_count(self, obj):
         return obj.media.count()
@@ -40,7 +40,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             'featured', 'is_published', 'order', 'media', 'media_ids',
             'start_date', 'end_date', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
     
     def get_media(self, obj):
         return MediaSerializer(obj.media.all(), many=True).data
