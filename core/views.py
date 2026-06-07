@@ -40,3 +40,9 @@ class DashboardAPIKeyViewSet(viewsets.ModelViewSet):
         api_key.secret_hash = APIKey.hash_secret(new_secret)
         api_key.save()
         return Response({'secret': new_secret})
+
+from django.http import JsonResponse
+
+def health_check(request):
+    """Health check endpoint for container orchestration"""
+    return JsonResponse({'status': 'ok', 'message': 'Limefolio API is running'})

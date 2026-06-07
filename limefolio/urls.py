@@ -7,8 +7,13 @@ from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+from core.views import health_check
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Health check
+    path('health/', health_check, name='health_check'),
     
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
