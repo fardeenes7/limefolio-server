@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: limefolio-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-limefolio}:${POSTGRES_PASSWORD:-limefolio}@db:5432/${POSTGRES_DB:-limefolio}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+      - PUBLIC_APP_DOMAIN=${PUBLIC_APP_DOMAIN}
+      - PUBLIC_APP_URL=${PUBLIC_APP_URL}
+      - REVALIDATION_TOKEN=${REVALIDATION_TOKEN}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    container_name: limefolio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-limefolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-limefolio}
+      POSTGRES_DB: ${POSTGRES_DB:-limefolio}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
