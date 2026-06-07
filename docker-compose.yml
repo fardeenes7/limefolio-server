@@ -41,8 +41,6 @@ services:
             - PUBLIC_APP_URL=${PUBLIC_APP_URL:-https://public.limefolio.com}
         depends_on:
             - db
-        networks:
-            - limefolio-network
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
             interval: 30s
@@ -60,8 +58,6 @@ services:
             POSTGRES_DB: ${POSTGRES_DB:-limefolio}
         volumes:
             - postgres_data:/var/lib/postgresql/data
-        networks:
-            - limefolio-network
         healthcheck:
             test:
                 [
@@ -74,7 +70,3 @@ services:
 
 volumes:
     postgres_data:
-
-networks:
-    limefolio-network:
-        external: true
