@@ -9,6 +9,8 @@ services:
         restart: unless-stopped
         ports:
             - "8001:8000"
+        volumes:
+            - .:/app
         env_file:
             - .env
         environment:
@@ -28,9 +30,9 @@ services:
             - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
             - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
             - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-            - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.console.EmailBackend}
+            - EMAIL_BACKEND=${EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
             - EMAIL_HOST=${EMAIL_HOST}
-            - EMAIL_PORT=${EMAIL_PORT}
+            - EMAIL_PORT=${EMAIL_PORT:-587}
             - EMAIL_USE_TLS=${EMAIL_USE_TLS}
             - EMAIL_HOST_USER=${EMAIL_HOST_USER}
             - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
@@ -39,6 +41,8 @@ services:
             - REVALIDATION_TOKEN=${REVALIDATION_TOKEN}
             - PUBLIC_APP_DOMAIN=${PUBLIC_APP_DOMAIN:-limefolio.com}
             - PUBLIC_APP_URL=${PUBLIC_APP_URL:-https://public.limefolio.com}
+            - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+            - CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}
         depends_on:
             - db
         healthcheck:
@@ -49,7 +53,7 @@ services:
             start_period: 10s
 
     db:
-        image: postgres:15-alpine
+        image: postgres:16
         container_name: limefolio-db
         restart: unless-stopped
         environment:

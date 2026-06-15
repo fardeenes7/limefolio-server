@@ -171,6 +171,9 @@ class CustomDomain(models.Model):
     verification_token = models.CharField(max_length=64, blank=True)
     verified_at = models.DateTimeField(null=True, blank=True)
     
+    # Cloudflare Custom Hostname ID
+    cloudflare_id = models.CharField(max_length=255, blank=True, null=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

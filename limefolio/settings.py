@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'experiences',
     'blog',
     'media',
+    'analytics',
 ]
 
 MIDDLEWARE = [
@@ -107,12 +108,11 @@ LOCAL_DB = {
 
 FORCE_SQLITE = config('FORCE_SQLITE', default=False, cast=bool)
 
-# Uncomment below to use PostgreSQL with DATABASE_URL from .env
-DATABASES = LOCAL_DB if FORCE_SQLITE else {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='')
-    )
-}
+# Use PostgreSQL with DATABASE_URL, falling back to SQLite if not set
+_database_url = config('DATABASE_URL', default='')
+DATABASES = LOCAL_DB if FORCE_SQLITE else (
+    {'default': dj_database_url.parse(_database_url)} if _database_url else LOCAL_DB
+)
 
 
 # Password validation
@@ -278,3 +278,6 @@ REVALIDATION_TOKEN = config('REVALIDATION_TOKEN', default=None)
 PUBLIC_APP_DOMAIN = config('PUBLIC_APP_DOMAIN', default="limefolio.com")
 PUBLIC_APP_URL = config('PUBLIC_APP_URL', default=f"https://public.{PUBLIC_APP_DOMAIN}")
 
+# Cloudflare Settings
+CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default=None)
+CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default=None)

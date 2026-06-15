@@ -22,6 +22,7 @@ class BlogPost(models.Model):
     
     # Media - using ManyToMany through the media app
     media = GenericRelation('media.Media', related_query_name='blog_post')
+    thumbnail_url = models.URLField(max_length=500, blank=True, help_text='Direct URL to thumbnail image (overrides media thumbnail)')
     
     # Metadata
     author = models.CharField(max_length=100, blank=True, help_text='Author name override')
@@ -80,6 +81,9 @@ class BlogPost(models.Model):
     @property
     def thumbnail(self):
         """Get the featured or first image as thumbnail"""
+        if self.thumbnail_url:
+            return self.thumbnail_url
+            
         featured_media = self.media.filter(is_featured=True, image__isnull=False).first()
         if featured_media:
             return featured_media.thumbnail.url if featured_media.thumbnail else featured_media.image.url
