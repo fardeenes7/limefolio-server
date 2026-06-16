@@ -261,7 +261,7 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:5173',
+    default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
     cast=Csv()
 )
 
@@ -271,13 +271,7 @@ CSRF_TRUSTED_ORIGINS = config(
     default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
     cast=Csv()
 )
-CSRF_COOKIE_SAMESITE = config('CSRF_COOKIE_SAMESITE', default='Lax')
-CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
-SESSION_COOKIE_SAMESITE = config('SESSION_COOKIE_SAMESITE', default='Lax')
-SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
 
-# Proxy Settings for Coolify / Reverse Proxies
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # DRF Spectacular Settings
 SPECTACULAR_SETTINGS = {
