@@ -20,7 +20,6 @@ class SiteDetectionMiddleware:
 
         site = None
 
-        print("host::", host)
 
         if not host:
             return self.get_response(request)
@@ -28,7 +27,6 @@ class SiteDetectionMiddleware:
         # Check if it's a subdomain (*.limefolio.com)
         if host.endswith(BASE_DOMAIN) or '.' not in host:
             subdomain = host.replace(f'.{BASE_DOMAIN}', '')
-            print(subdomain)
             site = Site.objects.filter(subdomain=subdomain, is_active=True).first()
         else:
             # Check custom domains

@@ -13,3 +13,4 @@ pip-delete-this-directory.txt
 .git
 .gitignore
 db.sqlite3
+staticfiles
