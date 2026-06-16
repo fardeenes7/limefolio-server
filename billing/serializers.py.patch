@@ -1,0 +1,13 @@
+import re
+with open("server/billing/serializers.py", "r") as f:
+    content = f.read()
+if "PromotionCampaignSerializer" not in content:
+    content += """
+class PromotionCampaignSerializer(serializers.ModelSerializer):
+    plan_name = serializers.CharField(source='plan_granted.name', read_only=True)
+    class Meta:
+        model = PromotionCampaign
+        fields = ['id', 'name', 'duration_days', 'valid_until', 'auto_apply_on_signup', 'plan_name']
+"""
+    with open("server/billing/serializers.py", "w") as f:
+        f.write(content)

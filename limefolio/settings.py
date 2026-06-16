@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'blog',
     'media',
     'analytics',
+    'billing',
 ]
 
 MIDDLEWARE = [
@@ -281,3 +282,19 @@ PUBLIC_APP_URL = config('PUBLIC_APP_URL', default=f"https://public.{PUBLIC_APP_D
 # Cloudflare Settings
 CLOUDFLARE_API_TOKEN = config('CLOUDFLARE_API_TOKEN', default=None)
 CLOUDFLARE_ZONE_ID = config('CLOUDFLARE_ZONE_ID', default=None)
+
+# Billing Settings
+BILLING_GRACE_PERIOD_DAYS = config('BILLING_GRACE_PERIOD_DAYS', default=7, cast=int)
+BKASH_PAYMENT_TIMEOUT_MINUTES = config('BKASH_PAYMENT_TIMEOUT_MINUTES', default=30, cast=int)
+RENEWAL_REMINDER_DAYS_BEFORE = config('RENEWAL_REMINDER_DAYS_BEFORE', default=7, cast=int)
+
+POLAR_ACCESS_TOKEN = config("POLAR_ACCESS_TOKEN", default="")
+POLAR_WEBHOOK_SECRET = config("POLAR_WEBHOOK_SECRET", default="")
+POLAR_ENVIRONMENT = config("POLAR_ENVIRONMENT", default="sandbox")
+
+BKASH_APP_KEY = config("BKASH_APP_KEY", default="")
+BKASH_APP_SECRET = config("BKASH_APP_SECRET", default="")
+BKASH_USERNAME = config("BKASH_USERNAME", default="")
+BKASH_PASSWORD = config("BKASH_PASSWORD", default="")
+BKASH_BASE_URL = config("BKASH_BASE_URL", default="https://tokenized.sandbox.bka.sh/v1.2.0-beta")
+

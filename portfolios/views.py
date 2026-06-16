@@ -81,6 +81,17 @@ class CustomDomainViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Auto-associate the domain with the user's site and add to Cloudflare"""
+        from billing.gates import check_limit
+        from rest_framework.exceptions import PermissionDenied
+        
+        limit_check = check_limit(self.request.user, "allow_custom_domain", 0)
+        if limit_check["upgrade_required"]:
+            raise PermissionDenied({
+                "error": "upgrade_required",
+                "message": "Custom domains are not allowed on your current plan.",
+                "upgrade_url": "/pricing"
+            })
+            
         domain = serializer.validated_data.get('domain')
         cloudflare_id = CloudflareClient.add_custom_hostname(domain)
         serializer.save(site=self.request.user.site, cloudflare_id=cloudflare_id)

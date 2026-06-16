@@ -70,6 +70,18 @@ class BlogPostViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Set the site when creating a blog post"""
+        from billing.gates import check_limit
+        from rest_framework.exceptions import PermissionDenied
+        
+        current_count = BlogPost.objects.filter(site__user=self.request.user).count()
+        limit_check = check_limit(self.request.user, "max_blogs", current_count)
+        if limit_check["upgrade_required"]:
+            raise PermissionDenied({
+                "error": "upgrade_required",
+                "message": f"You have reached the limit of {limit_check['limit']} blog posts for your current plan.",
+                "upgrade_url": "/pricing"
+            })
+            
         site = self.request.user.site
         
         # Auto-publish if status is published and no published_at date

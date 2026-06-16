@@ -33,6 +33,8 @@ urlpatterns = [
     path('api/dashboard/', include('media.urls')),
     path('api/dashboard/blog/', include('blog.urls')),
     path('api/analytics/', include('analytics.urls')),
+    path('api/billing/', include('billing.urls')),
+
     
     # Site API - Domain-based, public read
     # Routes: /api/public/sites/, /api/public/projects/, /api/public/experiences/, /api/public/skills/, /api/public/social-links/, /api/public/blog/, /api/public/media/
