@@ -1,5 +1,8 @@
 from portfolios.models import Site, CustomDomain
+#IMPORT debug from setting
+from limefolio.settings import DEBUG
 
+BASE_DOMAIN = 'limefolio.com' if DEBUG else 'localhost:3000' 
 
 class SiteDetectionMiddleware:
     """
@@ -17,12 +20,15 @@ class SiteDetectionMiddleware:
 
         site = None
 
+        print("host::", host)
+
         if not host:
             return self.get_response(request)
             
         # Check if it's a subdomain (*.limefolio.com)
-        if host.endswith('.limefolio.com'):
-            subdomain = host.replace('.limefolio.com', '')
+        if host.endswith(BASE_DOMAIN) or '.' not in host:
+            subdomain = host.replace(f'.{BASE_DOMAIN}', '')
+            print(subdomain)
             site = Site.objects.filter(subdomain=subdomain, is_active=True).first()
         else:
             # Check custom domains
