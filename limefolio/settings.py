@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-=cldztbc4jg&xl0!x673!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.vercel.app', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.vercel.app,api.limefolio.com', cast=Csv())
 
 
 # Application definition
@@ -151,7 +151,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # AWS / S3 / R2 Settings
@@ -180,6 +180,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# Force WhiteNoise to find files even if STATIC_ROOT manifest is missing
+WHITENOISE_USE_FINDERS = True
 
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/' if AWS_S3_CUSTOM_DOMAIN else '/media/'
 
@@ -264,13 +267,7 @@ CORS_ALLOWED_ORIGINS = config(
     default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
     cast=Csv()
 )
-
 # CSRF Settings
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
-    cast=Csv()
-)
 
 
 # DRF Spectacular Settings
