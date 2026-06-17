@@ -234,16 +234,6 @@ OAUTH2_PROVIDER = {
     'REFRESH_TOKEN_EXPIRE_SECONDS': 2592000, # 30 days
 }
 
-# OAUTH2_PROVIDER_APPLICATION_MODEL = 'oauth2_provider.Application'
-# OAUTH2_PROVIDER_ACCESS_TOKEN_MODEL = 'oauth2_provider.AccessToken'
-# OAUTH2_PROVIDER_REFRESH_TOKEN_MODEL = 'oauth2_provider.RefreshToken'
-# OAUTH2_PROVIDER_ID_TOKEN_MODEL = 'oauth2_provider.IDToken'
-
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),   # change as needed
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-#     "AUTH_HEADER_TYPES": ("Bearer",),
-# }
 
 ACTIVATE_JWT = True
 
@@ -268,8 +258,11 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv()
 )
 # CSRF Settings
-
-
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
+    cast=Csv()
+)
 # DRF Spectacular Settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Limefolio API',
