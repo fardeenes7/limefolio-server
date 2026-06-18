@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-=cldztbc4jg&xl0!x673!*v2_=p$$eu)=7*f#d0#zs$44xx-h^')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,.vercel.app,api.limefolio.com', cast=Csv())
 
@@ -113,7 +113,7 @@ FORCE_SQLITE = config('FORCE_SQLITE', default=False, cast=bool)
 # Use PostgreSQL with DATABASE_URL, falling back to SQLite if not set
 _database_url = config('DATABASE_URL', default='')
 DATABASES = LOCAL_DB if FORCE_SQLITE else (
-    {'default': dj_database_url.parse(_database_url)} if _database_url else LOCAL_DB
+    {'default': dj_database_url.parse(_database_url, conn_max_age=config('CONN_MAX_AGE', default=60, cast=int))} if _database_url else LOCAL_DB
 )
 
 
@@ -297,4 +297,47 @@ BKASH_APP_SECRET = config("BKASH_APP_SECRET", default="")
 BKASH_USERNAME = config("BKASH_USERNAME", default="")
 BKASH_PASSWORD = config("BKASH_PASSWORD", default="")
 BKASH_BASE_URL = config("BKASH_BASE_URL", default="https://tokenized.sandbox.bka.sh/v1.2.0-beta")
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': config('DJANGO_LOG_LEVEL', default='INFO'),
+            'propagate': False,
+        },
+    },
+}
+
 
