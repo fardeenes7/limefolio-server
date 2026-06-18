@@ -259,11 +259,11 @@ CORS_ALLOWED_ORIGINS = config(
     cast=Csv()
 )
 # CSRF Settings
-CSRF_TRUSTED_ORIGINS = config(
-    'CSRF_TRUSTED_ORIGINS',
-    default='https://api.limefolio.com,https://limefolio.com,https://www.limefolio.com',
-    cast=Csv()
-)
+CSRF_TRUSTED_ORIGINS = ["https://api.limefolio.com"]
+
+#x-forwarded proto
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # DRF Spectacular Settings
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Limefolio API',
