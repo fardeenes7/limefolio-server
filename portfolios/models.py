@@ -182,3 +182,101 @@ class CustomDomain(models.Model):
     
     def __str__(self):
         return f"{self.domain} ({'verified' if self.status == 'verified' else 'pending'})"
+
+
+class PortfolioTemplateConfig(models.Model):
+    """
+    Stores the user's sparse template customization deltas for their portfolio site.
+
+    Design principle: only store what the user has explicitly changed from the
+    template defaults. The full resolved config is computed at SSR time by merging
+    these deltas with the static template definition in the Next.js codebase.
+    Never store the resolved/merged result here.
+
+    Fields:
+        site             -- OneToOne link to the owning Site
+        template_key     -- which template is active (must exist in the TS template registry)
+        theme_key        -- active color theme (must exist in the TS theme registry)
+        font_key         -- active font (must exist in the TS font registry)
+        template_version -- semver of the template at the time of last save; used to
+                           detect stale configs when a template is updated (Option C)
+        config_overrides -- sparse dict of user variant/input overrides, keyed by
+                           instanceId. Shape: { layout: {}, pages: { [pageKey]: {} } }
+        config_additions -- user-added SectionInstance objects (repeatable components).
+                           Shape: { layout: [], pages: { [pageKey]: [] } }
+        config_removals  -- instanceIds the user has removed.
+                           Shape: { layout: [], pages: { [pageKey]: [] } }
+        config_ordering  -- user's preferred section order as instanceId arrays.
+                           Shape: { layout: [], pages: { [pageKey]: [] } }
+                           Sections not present in the array are appended in template order.
+    """
+
+    site = models.OneToOneField(
+        'Site',
+        on_delete=models.CASCADE,
+        related_name='template_config',
+    )
+    template_key = models.CharField(max_length=100, default='default')
+    theme_key = models.CharField(max_length=100, default='default')
+    font_key = models.CharField(max_length=100, default='inter')
+    template_version = models.CharField(max_length=20, default='1.0.0')
+
+    # Sparse delta fields — never store the full merged result here
+    config_overrides = models.JSONField(default=dict, blank=True)
+    config_additions = models.JSONField(default=dict, blank=True)
+    config_removals  = models.JSONField(default=dict, blank=True)
+    config_ordering  = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Portfolio Template Config'
+        verbose_name_plural = 'Portfolio Template Configs'
+
+    def __str__(self):
+        return f'{self.site} — {self.template_key} v{self.template_version}'
+
+
+class TemplateVersionMigrationLog(models.Model):
+    """
+    Audit log for template version migrations applied to a user's PortfolioTemplateConfig.
+
+    When a template is updated in a breaking way (sections removed, instanceIds renamed,
+    input keys changed), a Django management command queries all PortfolioTemplateConfig
+    records on the old version, applies the migration, bumps template_version, and writes
+    a record here.
+
+    Fields:
+        config          -- the PortfolioTemplateConfig that was migrated
+        template_key    -- which template was migrated
+        from_version    -- semver before migration
+        to_version      -- semver after migration
+        changes_applied -- human-readable or structured description of what was changed
+                          (e.g. removed instanceIds, renamed keys, added new defaults)
+        migrated_at     -- when the migration ran
+        migrated_by     -- "auto" for management command, or staff user email for manual
+    """
+
+    config = models.ForeignKey(
+        PortfolioTemplateConfig,
+        on_delete=models.CASCADE,
+        related_name='migration_logs',
+    )
+    template_key    = models.CharField(max_length=100)
+    from_version    = models.CharField(max_length=20)
+    to_version      = models.CharField(max_length=20)
+    changes_applied = models.JSONField(default=list)   # list of change description strings
+    migrated_at     = models.DateTimeField(auto_now_add=True)
+    migrated_by     = models.CharField(max_length=255, default='auto')
+
+    class Meta:
+        ordering = ['-migrated_at']
+        verbose_name = 'Template Version Migration Log'
+        verbose_name_plural = 'Template Version Migration Logs'
+
+    def __str__(self):
+        return (
+            f'{self.config.site} | {self.template_key} '
+            f'{self.from_version} → {self.to_version}'
+        )

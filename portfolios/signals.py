@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 
@@ -16,6 +16,7 @@ def create_user_site(sender, instance, created, **kwargs):
         )
 
 @receiver(post_save, sender='portfolios.Site')
+@receiver(post_delete, sender='portfolios.Site')
 def revalidate_site_cache(sender, instance, **kwargs):
     """Trigger revalidation when Site settings are updated."""
     from core.revalidation import revalidate_site_tags
@@ -26,7 +27,15 @@ def revalidate_site_related(instance):
     from core.revalidation import revalidate_site_tags
     revalidate_site_tags(instance.site, "site")
 
+@receiver(post_save, sender='portfolios.PortfolioTemplateConfig')
+@receiver(post_delete, sender='portfolios.PortfolioTemplateConfig')
+def revalidate_template_config_cache(sender, instance, **kwargs):
+    """Trigger revalidation when PortfolioTemplateConfig is updated."""
+    from core.revalidation import revalidate_site_tags
+    revalidate_site_tags(instance.site, "template-config", "site")
+
 @receiver(post_save, sender='projects.Project')
+@receiver(post_delete, sender='projects.Project')
 def revalidate_project_cache(sender, instance, **kwargs):
     """Trigger revalidation when a Project is updated."""
     from core.revalidation import revalidate_site_tags
@@ -38,8 +47,11 @@ def revalidate_project_cache(sender, instance, **kwargs):
     revalidate_site_related(instance)
 
 @receiver(post_save, sender='experiences.Experience')
+@receiver(post_delete, sender='experiences.Experience')
 @receiver(post_save, sender='experiences.Skill')
+@receiver(post_delete, sender='experiences.Skill')
 @receiver(post_save, sender='experiences.SocialLink')
+@receiver(post_delete, sender='experiences.SocialLink')
 def revalidate_experience_related_cache(sender, instance, **kwargs):
     """Trigger revalidation when experiences/skills/social links are updated."""
     revalidate_site_related(instance)

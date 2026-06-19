@@ -43,10 +43,8 @@ def revalidate_site_tags(site, *tag_suffixes):
     Revalidates multiple tag suffixes for a site across its subdomain and verified custom domains.
     Example: revalidate_site_tags(site, "site", "projects", f"project-{slug}")
     """
-    public_app_domain = getattr(settings, 'PUBLIC_APP_DOMAIN', 'limefolio.com')
-    
-    # Construct list of all domains for this site
-    domains = [f"{site.subdomain}.{public_app_domain}"]
+    # Construct list of all domains for this site (Next.js middleware strips the base domain)
+    domains = [site.subdomain]
     
     # Add verified custom domains
     custom_domains = site.custom_domains.filter(status='verified').values_list('domain', flat=True)

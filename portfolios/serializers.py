@@ -2,7 +2,12 @@
 Serializers for portfolio sites and custom domains.
 """
 from rest_framework import serializers
-from portfolios.models import Site, CustomDomain
+from portfolios.models import (
+    Site,
+    CustomDomain,
+    PortfolioTemplateConfig,
+    TemplateVersionMigrationLog,
+)
 
 
 class CustomDomainSerializer(serializers.ModelSerializer):
@@ -81,4 +86,65 @@ class PublicSiteSerializer(serializers.ModelSerializer):
             'title', 'tagline', 'description',
             'theme','template','font', 'logo', 'favicon',
             'meta_title', 'meta_description', 'available_for_hire'
+        ]
+
+
+class PortfolioTemplateConfigSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PortfolioTemplateConfig.
+
+    Exposes raw sparse delta fields only — never the full resolved/merged config.
+    The `site` field is excluded from client-writable fields; it is automatically
+    set to the requesting user's Site in the view's get_or_create logic.
+
+    Use PATCH (partial=True) for updates — only send the fields that changed.
+    Never send a full resolved config here; only the specific delta fields.
+    """
+
+    class Meta:
+        model = PortfolioTemplateConfig
+        fields = [
+            'id',
+            'template_key',
+            'theme_key',
+            'font_key',
+            'template_version',
+            'config_overrides',
+            'config_additions',
+            'config_removals',
+            'config_ordering',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class TemplateVersionMigrationLogSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for TemplateVersionMigrationLog.
+
+    Log entries are created only by management commands (the migration system),
+    never via the client API. This serializer is exposed as a read-only list
+    endpoint so staff and users can audit migration history.
+    """
+
+    class Meta:
+        model = TemplateVersionMigrationLog
+        fields = [
+            'id',
+            'template_key',
+            'from_version',
+            'to_version',
+            'changes_applied',
+            'migrated_at',
+            'migrated_by',
+        ]
+        read_only_fields = [
+            'id',
+            'template_key',
+            'from_version',
+            'to_version',
+            'changes_applied',
+            'migrated_at',
+            'migrated_by',
         ]

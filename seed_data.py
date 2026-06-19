@@ -950,9 +950,20 @@ def main():
     """Main seeding function"""
     print("\n🌱 Starting data seeding for limefolio...\n")
     
+    username = sys.argv[1] if len(sys.argv) > 1 else 'fardeenes7'
+    
+    print(f"🧹 Cleaning up old data for {username}...")
+    try:
+        user = User.objects.get(username=username)
+        if hasattr(user, 'site'):
+            user.site.delete()
+            print(f"  ✓ Deleted old site data for {username}")
+    except User.DoesNotExist:
+        pass
+        
     # Seed user
-    print("👤 Creating user...")
-    user = seed_user('fardeen.es7')
+    print("\n👤 Creating user...")
+    user = seed_user(username)
     
     # Seed site
     print("\n🏠 Creating portfolio site...")

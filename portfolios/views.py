@@ -6,8 +6,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
-from portfolios.models import Site
-from portfolios.serializers import SiteDetailSerializer, PublicSiteSerializer, CustomDomainSerializer
+from portfolios.models import Site, PortfolioTemplateConfig
+from portfolios.serializers import (
+    SiteDetailSerializer,
+    PublicSiteSerializer,
+    CustomDomainSerializer,
+    PortfolioTemplateConfigSerializer,
+    TemplateVersionMigrationLogSerializer,
+)
 from projects.serializers import PublicProjectSerializer
 from experiences.serializers import ExperienceSerializer, SocialLinkSerializer, SkillSerializer
 from rest_framework import viewsets
@@ -193,3 +199,166 @@ class PublicSiteDetailView(APIView):
         site_data['social_links'] = SocialLinkSerializer(social_links, many=True).data
         
         return Response(site_data)
+
+
+class TemplateConfigView(APIView):
+    """
+    Retrieve and update the current user's PortfolioTemplateConfig.
+
+    GET:  Returns the config, auto-creating it with defaults if it doesn't
+          exist yet (first-time user experience — no 404 on first load).
+    PATCH: Partially update the config. Only the fields sent are updated.
+          Never accept or return a full resolved/merged config — only raw delta
+          fields (config_overrides, config_additions, config_removals, config_ordering).
+
+    PUT is intentionally not supported. Always use PATCH.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = PortfolioTemplateConfigSerializer
+
+    def _get_site(self, request):
+        """Return the user's Site or raise a 404 response."""
+        try:
+            return request.user.site
+        except Site.DoesNotExist:
+            return None
+
+    @extend_schema(
+        responses=PortfolioTemplateConfigSerializer,
+        description=(
+            "Retrieve the current user's PortfolioTemplateConfig. "
+            "Auto-creates with defaults if this is the first request."
+        ),
+        tags=['Dashboard - Template Config'],
+    )
+    def get(self, request):
+        """Retrieve (or auto-create) the user's PortfolioTemplateConfig."""
+        site = self._get_site(request)
+        if site is None:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        # get_or_create ensures new users always get a sensible default config
+        config, _ = PortfolioTemplateConfig.objects.get_or_create(
+            site=site,
+            defaults={
+                'template_key': 'default',
+                'theme_key': site.theme or 'default',
+                'font_key': site.font or 'inter',
+                'template_version': '1.0.0',
+            },
+        )
+        serializer = PortfolioTemplateConfigSerializer(config)
+        return Response(serializer.data)
+
+    @extend_schema(
+        request=PortfolioTemplateConfigSerializer,
+        responses=PortfolioTemplateConfigSerializer,
+        description=(
+            "Partially update the user's PortfolioTemplateConfig. "
+            "Only the fields provided in the request body are updated. "
+            "Always use PATCH — PUT is not supported."
+        ),
+        tags=['Dashboard - Template Config'],
+    )
+    def patch(self, request):
+        """Partially update the user's PortfolioTemplateConfig (PATCH only)."""
+        site = self._get_site(request)
+        if site is None:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        config, _ = PortfolioTemplateConfig.objects.get_or_create(
+            site=site,
+            defaults={
+                'template_key': 'default',
+                'theme_key': site.theme or 'default',
+                'font_key': site.font or 'inter',
+                'template_version': '1.0.0',
+            },
+        )
+        serializer = PortfolioTemplateConfigSerializer(
+            config, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MigrationLogListView(APIView):
+    """
+    Read-only list of TemplateVersionMigrationLog entries for the current user's
+    PortfolioTemplateConfig.
+
+    Log entries are created only by management commands (the migration system)
+    and are provided here for user transparency and staff auditing.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = TemplateVersionMigrationLogSerializer
+
+    @extend_schema(
+        responses=TemplateVersionMigrationLogSerializer(many=True),
+        description=(
+            "List all template version migration log entries for the current user's "
+            "PortfolioTemplateConfig. Read-only — log entries are written by the "
+            "migration system only."
+        ),
+        tags=['Dashboard - Template Config'],
+    )
+    def get(self, request):
+        """List migration logs for the current user's template config."""
+        try:
+            config = request.user.site.template_config
+        except (Site.DoesNotExist, PortfolioTemplateConfig.DoesNotExist):
+            return Response([])  # New user with no config yet — return empty list
+
+        logs = config.migration_logs.all()
+        serializer = TemplateVersionMigrationLogSerializer(logs, many=True)
+        return Response(serializer.data)
+class PublicTemplateConfigView(APIView):
+    """
+    Retrieve the PortfolioTemplateConfig for a public site.
+    Site is detected from request.site (set by middleware).
+    """
+    permission_classes = []  # Public access
+    
+    @extend_schema(
+        responses=PortfolioTemplateConfigSerializer,
+        description="Get template config for the public site (detected from domain)",
+        tags=['Site API']
+    )
+    def get(self, request):
+        site = getattr(request, 'site', None)
+        
+        if not site:
+            return Response(
+                {'error': 'Site not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if not site.is_published:
+            return Response(
+                {'error': 'Site is not published'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        try:
+            config = site.template_config
+            serializer = PortfolioTemplateConfigSerializer(config)
+            return Response(serializer.data)
+        except PortfolioTemplateConfig.DoesNotExist:
+            # If the user has a site but hasn't created a config yet,
+            # we return an empty skeleton that triggers emptyUserConfig on the client
+            return Response({
+                'template_key': 'default',
+                'theme_key': site.theme or 'default',
+                'font_key': site.font or 'inter',
+                'template_version': '1.0.0',
+                'config_overrides': {'layout': {}, 'pages': {}},
+                'config_additions': {'layout': [], 'pages': {}},
+                'config_removals': {'layout': [], 'pages': {}},
+                'config_ordering': {}
+            })
