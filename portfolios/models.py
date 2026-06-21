@@ -76,7 +76,7 @@ class Site(models.Model):
     meta_description = models.TextField(max_length=500, blank=True)
     
     # Status
-    is_published = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     available_for_hire = models.BooleanField(default=False)
 
