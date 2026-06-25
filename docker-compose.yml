@@ -7,6 +7,8 @@ services:
             dockerfile: Dockerfile
         container_name: limefolio-server
         restart: unless-stopped
+        volumes:
+            - ./:/app
         ports:
             - "127.0.0.1:8001:8000"
         env_file:
