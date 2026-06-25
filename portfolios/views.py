@@ -6,13 +6,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
-from portfolios.models import Site, PortfolioTemplateConfig
+from portfolios.models import Site, PortfolioTemplateConfig, SiteSEO
 from portfolios.serializers import (
     SiteDetailSerializer,
     PublicSiteSerializer,
     CustomDomainSerializer,
     PortfolioTemplateConfigSerializer,
     TemplateVersionMigrationLogSerializer,
+    SiteSEOSerializer,
 )
 from projects.serializers import PublicProjectSerializer
 from experiences.serializers import ExperienceSerializer, SocialLinkSerializer, SkillSerializer
@@ -61,6 +62,55 @@ class DashboardSiteView(APIView):
         try:
             site = request.user.site
             serializer = SiteDetailSerializer(site, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Site.DoesNotExist:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class SiteSEOView(APIView):
+    """
+    Dashboard Site SEO management.
+    GET: Retrieve the user's site SEO settings
+    PATCH: Update the user's site SEO settings
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = SiteSEOSerializer
+
+    @extend_schema(
+        responses=SiteSEOSerializer,
+        description="Get the authenticated user's site SEO config. Auto-creates if missing.",
+        tags=['Dashboard - Site SEO']
+    )
+    def get(self, request):
+        """Get the user's site SEO"""
+        try:
+            site = request.user.site
+            seo, _ = SiteSEO.objects.get_or_create(site=site)
+            serializer = SiteSEOSerializer(seo)
+            return Response(serializer.data)
+        except Site.DoesNotExist:
+            return Response(
+                {'error': 'Site not found. Please create a site first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @extend_schema(
+        request=SiteSEOSerializer,
+        responses=SiteSEOSerializer,
+        description="Update the authenticated user's site SEO settings",
+        tags=['Dashboard - Site SEO']
+    )
+    def patch(self, request):
+        """Update the user's site SEO settings"""
+        try:
+            site = request.user.site
+            seo, _ = SiteSEO.objects.get_or_create(site=site)
+            serializer = SiteSEOSerializer(seo, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
@@ -243,7 +293,7 @@ class TemplateConfigView(APIView):
         config, _ = PortfolioTemplateConfig.objects.get_or_create(
             site=site,
             defaults={
-                'template_key': 'default',
+                'template_key': site.template or 'default',
                 'theme_key': site.theme or 'default',
                 'font_key': site.font or 'inter',
                 'template_version': '1.0.0',

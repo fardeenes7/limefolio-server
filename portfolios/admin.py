@@ -4,6 +4,7 @@ from portfolios.models import (
     CustomDomain,
     PortfolioTemplateConfig,
     TemplateVersionMigrationLog,
+    SiteSEO,
 )
 
 
@@ -14,6 +15,12 @@ class SiteAdmin(admin.ModelAdmin):
     search_fields = ['title', 'subdomain', 'user__username', 'user__email']
     readonly_fields = ['uuid', 'created_at', 'updated_at']
 
+
+@admin.register(SiteSEO)
+class SiteSEOAdmin(admin.ModelAdmin):
+    list_display = ['site', 'default_meta_title', 'robots_default', 'created_at']
+    search_fields = ['site__title', 'site__subdomain']
+    readonly_fields = ['created_at', 'updated_at']
 
 @admin.register(CustomDomain)
 class CustomDomainAdmin(admin.ModelAdmin):

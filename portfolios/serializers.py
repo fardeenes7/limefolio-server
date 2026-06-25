@@ -7,6 +7,7 @@ from portfolios.models import (
     CustomDomain,
     PortfolioTemplateConfig,
     TemplateVersionMigrationLog,
+    SiteSEO,
 )
 
 
@@ -20,6 +21,21 @@ class CustomDomainSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'status', 'verified_at', 'created_at', 'updated_at']
+
+class SiteSEOSerializer(serializers.ModelSerializer):
+    """Serializer for SiteSEO"""
+    class Meta:
+        model = SiteSEO
+        fields = [
+            'id',
+            'default_meta_title', 'default_meta_description',
+            'og_image',
+            'google_analytics_id', 'google_tag_manager_id', 'facebook_pixel_id',
+            'robots_default',
+            'page_meta',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class SiteListSerializer(serializers.ModelSerializer):
@@ -37,15 +53,15 @@ class SiteListSerializer(serializers.ModelSerializer):
 class SiteDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for site with all related data"""
     custom_domains = CustomDomainSerializer(many=True, read_only=True)
+    seo = SiteSEOSerializer(read_only=True)
     
     class Meta:
         model = Site
         fields = [
             'id', 'uuid', 'subdomain', 'title', 'tagline', 'description',
             'logo', 'favicon', 'theme', 'template', 'font',
-            'meta_title', 'meta_description',
             'is_published', 'is_active', 'available_for_hire',
-            'custom_domains',
+            'custom_domains', 'seo',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'uuid', 'created_at', 'updated_at']
@@ -74,18 +90,19 @@ class SiteDetailSerializer(serializers.ModelSerializer):
 
 class PublicSiteSerializer(serializers.ModelSerializer):
     """Public site serializer - minimal info"""
+    seo = SiteSEOSerializer(read_only=True)
     
     class Meta:
         model = Site
         fields = [
             'title', 'tagline', 'description',
             'theme','template','font', 'logo', 'favicon',
-            'meta_title', 'meta_description', 'available_for_hire'
+            'available_for_hire', 'seo'
         ]
         read_only_fields = [
             'title', 'tagline', 'description',
             'theme','template','font', 'logo', 'favicon',
-            'meta_title', 'meta_description', 'available_for_hire'
+            'available_for_hire', 'seo'
         ]
 
 

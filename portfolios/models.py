@@ -71,10 +71,6 @@ class Site(models.Model):
     logo = models.ImageField(upload_to='site_logos/', blank=True, null=True)
     favicon = models.ImageField(upload_to='site_favicons/', blank=True, null=True)
     
-    # SEO
-    meta_title = models.CharField(max_length=200, blank=True)
-    meta_description = models.TextField(max_length=500, blank=True)
-    
     # Status
     is_published = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
@@ -280,3 +276,40 @@ class TemplateVersionMigrationLog(models.Model):
             f'{self.config.site} | {self.template_key} '
             f'{self.from_version} → {self.to_version}'
         )
+
+class SiteSEO(models.Model):
+    """SEO configuration for a Site, including global defaults and per-page overrides."""
+    
+    site = models.OneToOneField('Site', on_delete=models.CASCADE, related_name='seo')
+
+    # Global defaults
+    default_meta_title = models.CharField(max_length=60, blank=True)
+    default_meta_description = models.TextField(max_length=160, blank=True)
+    og_image = models.ImageField(upload_to='site_og/', blank=True, null=True)
+
+    # Analytics & Tracking
+    google_analytics_id = models.CharField(max_length=50, blank=True)
+    google_tag_manager_id = models.CharField(max_length=50, blank=True)
+    facebook_pixel_id = models.CharField(max_length=50, blank=True)
+
+    # Robots / Crawling
+    ROBOTS_CHOICES = [
+        ('index,follow', 'Index, Follow (default)'),
+        ('noindex,follow', 'No Index, Follow'),
+        ('index,nofollow', 'Index, No Follow'),
+        ('noindex,nofollow', 'No Index, No Follow'),
+    ]
+    robots_default = models.CharField(max_length=30, choices=ROBOTS_CHOICES, default='index,follow')
+
+    # Per-page overrides (sparse dict of pageKey -> {meta_title, meta_description, og_image, robots})
+    page_meta = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Site SEO'
+        verbose_name_plural = 'Site SEOs'
+
+    def __str__(self):
+        return f'SEO config for {self.site}'

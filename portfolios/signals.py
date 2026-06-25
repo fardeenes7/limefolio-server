@@ -16,6 +16,13 @@ def create_user_site(sender, instance, created, **kwargs):
         )
 
 @receiver(post_save, sender='portfolios.Site')
+def create_site_seo(sender, instance, created, **kwargs):
+    """Auto-create SiteSEO when a new Site is created."""
+    if created:
+        from portfolios.models import SiteSEO
+        SiteSEO.objects.get_or_create(site=instance)
+
+@receiver(post_save, sender='portfolios.Site')
 @receiver(post_delete, sender='portfolios.Site')
 def revalidate_site_cache(sender, instance, **kwargs):
     """Trigger revalidation when Site settings are updated."""
@@ -33,6 +40,13 @@ def revalidate_template_config_cache(sender, instance, **kwargs):
     """Trigger revalidation when PortfolioTemplateConfig is updated."""
     from core.revalidation import revalidate_site_tags
     revalidate_site_tags(instance.site, "template-config", "site")
+
+@receiver(post_save, sender='portfolios.SiteSEO')
+@receiver(post_delete, sender='portfolios.SiteSEO')
+def revalidate_site_seo_cache(sender, instance, **kwargs):
+    """Trigger revalidation when SiteSEO is updated."""
+    from core.revalidation import revalidate_site_tags
+    revalidate_site_tags(instance.site, "seo", "site")
 
 @receiver(post_save, sender='projects.Project')
 @receiver(post_delete, sender='projects.Project')
