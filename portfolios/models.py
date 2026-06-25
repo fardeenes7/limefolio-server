@@ -222,6 +222,7 @@ class PortfolioTemplateConfig(models.Model):
     config_additions = models.JSONField(default=dict, blank=True)
     config_removals  = models.JSONField(default=dict, blank=True)
     config_ordering  = models.JSONField(default=dict, blank=True)
+    theme_overrides  = models.JSONField(default=dict, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

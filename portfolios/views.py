@@ -296,6 +296,7 @@ class TemplateConfigView(APIView):
                 'template_key': site.template or 'default',
                 'theme_key': site.theme or 'default',
                 'font_key': site.font or 'inter',
+
                 'template_version': '1.0.0',
             },
         )
@@ -326,6 +327,7 @@ class TemplateConfigView(APIView):
                 'template_key': 'default',
                 'theme_key': site.theme or 'default',
                 'font_key': site.font or 'inter',
+
                 'template_version': '1.0.0',
             },
         )
@@ -410,5 +412,6 @@ class PublicTemplateConfigView(APIView):
                 'config_overrides': {'layout': {}, 'pages': {}},
                 'config_additions': {'layout': [], 'pages': {}},
                 'config_removals': {'layout': [], 'pages': {}},
-                'config_ordering': {}
+                'config_ordering': {},
+                'theme_overrides': {}
             })

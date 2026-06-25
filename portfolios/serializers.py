@@ -130,6 +130,7 @@ class PortfolioTemplateConfigSerializer(serializers.ModelSerializer):
             'config_additions',
             'config_removals',
             'config_ordering',
+            'theme_overrides',
             'created_at',
             'updated_at',
         ]
