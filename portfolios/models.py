@@ -215,6 +215,15 @@ class PortfolioTemplateConfig(models.Model):
     template_key = models.CharField(max_length=100, default='default')
     theme_key = models.CharField(max_length=100, default='default')
     font_key = models.CharField(max_length=100, default='inter')
+    
+    LAYOUT_WIDTH_CHOICES = [
+        ('narrow', 'Narrow'),
+        ('default', 'Default'),
+        ('wide', 'Wide'),
+        ('full', 'Full Width'),
+    ]
+    layout_width = models.CharField(max_length=20, choices=LAYOUT_WIDTH_CHOICES, default='default')
+    
     template_version = models.CharField(max_length=20, default='1.0.0')
 
     # Sparse delta fields — never store the full merged result here

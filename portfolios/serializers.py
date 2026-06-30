@@ -125,6 +125,7 @@ class PortfolioTemplateConfigSerializer(serializers.ModelSerializer):
             'template_key',
             'theme_key',
             'font_key',
+            'layout_width',
             'template_version',
             'config_overrides',
             'config_additions',
