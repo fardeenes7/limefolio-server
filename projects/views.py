@@ -70,7 +70,9 @@ class PublicProjectListView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        projects = site.projects.filter(is_published=True).order_by('-featured', '-created_at')
+        is_owner = request.user and request.user.is_authenticated and hasattr(request.user, 'site') and request.user.site == site
+        projects_qs = site.projects.all() if is_owner else site.projects.filter(is_published=True)
+        projects = projects_qs.order_by('-featured', '-created_at')
         serializer = PublicProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -103,8 +105,12 @@ class PublicProjectDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        is_owner = request.user and request.user.is_authenticated and hasattr(request.user, 'site') and request.user.site == site
         try:
-            project = site.projects.get(slug=slug, is_published=True)
+            if is_owner:
+                project = site.projects.get(slug=slug)
+            else:
+                project = site.projects.get(slug=slug, is_published=True)
         except Project.DoesNotExist:
             return Response(
                 {'error': 'Project not found'},

@@ -66,9 +66,15 @@ class PublicMediaListView(APIView):
         project_ct = ContentType.objects.get_for_model(Project)
         blogpost_ct = ContentType.objects.get_for_model(BlogPost)
         
+        is_owner = request.user and request.user.is_authenticated and hasattr(request.user, 'site') and request.user.site == site
+
         # Get IDs of site's projects and blog posts
-        project_ids = list(site.projects.filter(is_published=True).values_list('id', flat=True))
-        blogpost_ids = list(site.blog_posts.filter(status='published').values_list('id', flat=True))
+        if is_owner:
+            project_ids = list(site.projects.values_list('id', flat=True))
+            blogpost_ids = list(site.blog_posts.values_list('id', flat=True))
+        else:
+            project_ids = list(site.projects.filter(is_published=True).values_list('id', flat=True))
+            blogpost_ids = list(site.blog_posts.filter(status='published').values_list('id', flat=True))
         
         # Build query
         media = Media.objects.none()

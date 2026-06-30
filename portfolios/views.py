@@ -222,8 +222,10 @@ class PublicSiteDetailView(APIView):
                 {'error': 'Site not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+            
+        is_owner = request.user and request.user.is_authenticated and hasattr(request.user, 'site') and request.user.site == site
         
-        if not site.is_published:
+        if not site.is_published and not is_owner:
             return Response(
                 {'error': 'Site is not published'},
                 status=status.HTTP_403_FORBIDDEN
@@ -233,15 +235,18 @@ class PublicSiteDetailView(APIView):
         site_data = PublicSiteSerializer(site).data
         
         # Add projects
-        projects = site.projects.filter(is_published=True).order_by('-featured', '-created_at')
+        projects_qs = site.projects.all() if is_owner else site.projects.filter(is_published=True)
+        projects = projects_qs.order_by('-featured', '-created_at')
         site_data['projects'] = PublicProjectSerializer(projects, many=True).data
         
         # Add experiences
-        experiences = site.experiences.filter(is_published=True).order_by('-is_current', '-start_date')
+        experiences_qs = site.experiences.all() if is_owner else site.experiences.filter(is_published=True)
+        experiences = experiences_qs.order_by('-is_current', '-start_date')
         site_data['experiences'] = ExperienceSerializer(experiences, many=True).data
         
         # Add skills
-        skills = site.skills.filter(is_published=True).order_by('-is_featured', 'category', 'order')
+        skills_qs = site.skills.all() if is_owner else site.skills.filter(is_published=True)
+        skills = skills_qs.order_by('-is_featured', 'category', 'order')
         site_data['skills'] = SkillSerializer(skills, many=True).data
 
         # Add social links
@@ -390,8 +395,10 @@ class PublicTemplateConfigView(APIView):
                 {'error': 'Site not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+            
+        is_owner = request.user and request.user.is_authenticated and hasattr(request.user, 'site') and request.user.site == site
         
-        if not site.is_published:
+        if not site.is_published and not is_owner:
             return Response(
                 {'error': 'Site is not published'},
                 status=status.HTTP_403_FORBIDDEN
