@@ -14,7 +14,7 @@ services:
         env_file:
             - .env
         environment:
-            - DATABASE_URL=postgresql://${POSTGRES_USER:-limefolio}:${POSTGRES_PASSWORD:-limefolio}@db:5432/${POSTGRES_DB:-limefolio}
+            - DATABASE_URL=${DATABASE_URL}
             - SECRET_KEY=${SECRET_KEY}
             - DEBUG=${DEBUG:-False}
             - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,.vercel.app}
