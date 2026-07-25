@@ -33,10 +33,16 @@ class DashboardMediaListView(APIView):
     def get(self, request):
         """List all media"""
         try:
+            from django.contrib.contenttypes.models import ContentType
+            from portfolios.models import Site
+            
+            site = request.user.site
+            site_ct = ContentType.objects.get_for_model(Site)
+            
             # Get media that belongs to the user's site (not attached to specific content)
             media = Media.objects.filter(
-                content_type__isnull=True,
-                object_id__isnull=True
+                content_type=site_ct,
+                object_id=site.id
             ).order_by('-created_at')
             
             serializer = MediaSerializer(media, many=True)
@@ -75,7 +81,13 @@ class DashboardMediaListView(APIView):
 
         serializer = MediaURLSerializer(data=data)
         if serializer.is_valid():
-            media = serializer.save()
+            from django.contrib.contenttypes.models import ContentType
+            from portfolios.models import Site
+            
+            site = request.user.site
+            site_ct = ContentType.objects.get_for_model(Site)
+            
+            media = serializer.save(content_type=site_ct, object_id=site.id)
             response_serializer = MediaSerializer(media)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -88,10 +100,29 @@ class DashboardMediaDetailView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     
-    def get_object(self, pk):
-        """Get media object"""
+    def get_object(self, pk, user):
+        """Get media object and verify ownership"""
         try:
-            return Media.objects.get(pk=pk)
+            media = Media.objects.get(pk=pk)
+            
+            # Verify ownership based on content object
+            if media.content_type and media.object_id:
+                parent = media.content_object
+                if not parent:
+                    return None
+                    
+                from portfolios.models import Site
+                if isinstance(parent, Site):
+                    if parent.user != user:
+                        return None
+                elif hasattr(parent, 'site'):
+                    if getattr(parent.site, 'user', None) != user:
+                        return None
+            else:
+                # Completely unattached media cannot be accessed
+                return None
+                
+            return media
         except Media.DoesNotExist:
             return None
     
@@ -102,7 +133,7 @@ class DashboardMediaDetailView(APIView):
     )
     def get(self, request, pk):
         """Retrieve media"""
-        media = self.get_object(pk)
+        media = self.get_object(pk, request.user)
         if not media:
             return Response(
                 {'error': 'Media not found'},
@@ -120,7 +151,7 @@ class DashboardMediaDetailView(APIView):
     )
     def patch(self, request, pk):
         """Update media"""
-        media = self.get_object(pk)
+        media = self.get_object(pk, request.user)
         if not media:
             return Response(
                 {'error': 'Media not found'},
@@ -140,7 +171,7 @@ class DashboardMediaDetailView(APIView):
     )
     def delete(self, request, pk):
         """Delete media"""
-        media = self.get_object(pk)
+        media = self.get_object(pk, request.user)
         if not media:
             return Response(
                 {'error': 'Media not found'},
@@ -170,6 +201,22 @@ class SetFeaturedMediaView(APIView):
             media = Media.objects.get(pk=pk)
         except Media.DoesNotExist:
             return Response({'error': 'Media not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check ownership
+        if media.content_type and media.object_id:
+            parent = media.content_object
+            if not parent:
+                return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+                
+            from portfolios.models import Site
+            if isinstance(parent, Site):
+                if parent.user != request.user:
+                    return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+            elif hasattr(parent, 'site'):
+                if getattr(parent.site, 'user', None) != request.user:
+                    return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({'error': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
         # If already featured, allow toggling off
         if media.is_featured:
@@ -411,7 +458,13 @@ class DashboardMediaUploadView(APIView):
             
             serializer = MediaSerializer(data=media_data)
             if serializer.is_valid():
-                serializer.save()
+                from django.contrib.contenttypes.models import ContentType
+                from portfolios.models import Site
+                
+                site = request.user.site
+                site_ct = ContentType.objects.get_for_model(Site)
+                
+                serializer.save(content_type=site_ct, object_id=site.id)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

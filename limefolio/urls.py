@@ -8,9 +8,13 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from core.views import health_check
+from public_api.views import DomainAskView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Caddy On-Demand TLS endpoint
+    path('domains/ask', DomainAskView.as_view(), name='domain_ask'),
     
     # Health check
     path('health/', health_check, name='health_check'),
